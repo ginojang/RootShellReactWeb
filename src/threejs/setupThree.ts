@@ -58,8 +58,11 @@ export const setupThree = (
     renderer.domElement.height = height * dpr
     renderer.setClearColor(0xffffff, 0)
 
-    renderer.toneMapping = THREE.NeutralToneMapping
+    //renderer.toneMapping = THREE.NeutralToneMapping
+    //renderer.toneMappingExposure = 1
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1
+
     renderer.outputColorSpace = THREE.SRGBColorSpace
 
 
@@ -68,7 +71,7 @@ export const setupThree = (
     pointLight.position.set(5, 5, 5)
     scene.add(pointLight)
 
-    const directionalLight = new THREE.DirectionalLight("#FFFFFF", 0.8)
+    const directionalLight = new THREE.DirectionalLight(0xfff2e0, 0.6)
     directionalLight.position.set(0, 3, 5)
     directionalLight.castShadow = true
     scene.add(directionalLight)
@@ -85,29 +88,26 @@ export const setupThree = (
     updateFns.push(cosmic.update)
     disposers.push(cosmic.dispose)
 
-    /*
-        createBloomText("KAIA 지갑 연결이 필요합니다.", new THREE.Vector3(0.1, 1.2, -8), 0.44 + 0.02)
-            .then((mesh) => {
-                scene.add(mesh)
-            })
-    
-        createBloomText("화면을 터치하면 지갑이 연결됩니다.", new THREE.Vector3(0.1, -0.8, -8), 0.3 + 0.02)
-            .then((mesh) => {
-                scene.add(mesh)
-            })
-    */
 
     // ✅ 블룸 세팅
     const composer = new EffectComposer(renderer)
     const renderScene = new RenderPass(scene, camera)
     composer.addPass(renderScene)
 
+    /*
     const unrealBloom = new UnrealBloomPass(
         new THREE.Vector2(width, height),
         (GlobalEnv.isMobile === true) ? 0.4 : 0.2,
         0.8,
         0.4
+    )*/
+    const unrealBloom = new UnrealBloomPass(
+        new THREE.Vector2(width, height),
+        0.15, // strength ↓
+        0.6,  // radius ↓
+        0.5
     )
+
     composer.addPass(unrealBloom)
 
     const outputPass = new OutputPass()

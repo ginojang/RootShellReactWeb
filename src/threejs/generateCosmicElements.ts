@@ -146,5 +146,4 @@ export function generateCosmicElements(
 
     return { update, dispose, mesh: stars };
 
-    return { update, dispose, mesh: stars }
 }
