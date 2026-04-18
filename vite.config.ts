@@ -20,7 +20,11 @@ export default defineConfig(({ mode }) => {
       })
     ],
     server: {
-      port: 3000
+      port: 3000,
+      watch: {
+        usePolling: true,
+        interval: 100
+      }
     },
     build: {
       rollupOptions: {

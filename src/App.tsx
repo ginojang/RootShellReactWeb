@@ -1,7 +1,5 @@
 // App.tsx
 
-import { DAppUnityWeb } from './appServices/dAppUnityWeb'
-import { LineUnityWeb } from './appServices/lineUnityWeb'
 import { PureUnityWebView } from './appServices/PureUnityWebView'
 import { Toaster } from 'react-hot-toast'
 
@@ -10,25 +8,9 @@ import { InitGlobalEnv, getLanguage, GlobalEnv } from './config/GlobalEnv'
 
 //import { TestOggPlayer } from './utils/testOggPlayer'
 
-type AppType = 'dapp_unity_web' | 'line_unity_web' | 'pure_unity'
-const APP_TYPE = (import.meta.env.VITE_APP_TYPE as AppType) ?? 'pure_unity'
 
 function DynamicApp() {
-  switch (APP_TYPE) {
-    case 'dapp_unity_web':
-      return (
-        <DAppUnityWeb />
-      )
-
-    case 'line_unity_web':
-      return (
-        <LineUnityWeb />
-      )
-
-    case 'pure_unity':
-    default:
-      return <PureUnityWebView />
-  }
+  return <PureUnityWebView />
 }
 
 export default function App() {

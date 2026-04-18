@@ -77,7 +77,7 @@ export async function O2JamMainLoop({ isFirstLoop, onStartUnity }: O2JamMainLoop
     if (isFirstLoop) {
 
         const result = await getWalletUserInfo();
-        log(`[🧠MainLoop---] getWalletUserInfo result: ${result}`);
+        log(`[🧠MainLoop 111  ---] getWalletUserInfo result: ${result}`);
         //
         if (result) {
             try {
