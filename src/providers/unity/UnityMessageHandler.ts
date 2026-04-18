@@ -17,11 +17,8 @@ import {
   handleSpinKaiaWheel,
   handleAddFriends,
   handleSubtractCoin,
-} from '../../content/O2JamMain'
+} from '../../content/temp/O2JamMain'
 
-import {
-  handleShowPopup,
-} from '../../content/O2JamPopup'
 
 import {
   handleShowLoadingUI,
@@ -150,7 +147,6 @@ export const unityMessageHandlers: Record<string, UnityMessageHandler> = {
   [UnityMessageTypes.setCurrentStageID]: handleSetCurrentStageID,
   [UnityMessageTypes.getCurrentStageID]: handleGetCurrentStageID,
   [UnityMessageTypes.spinKaiaWheel]: handleSpinKaiaWheel,
-  [UnityMessageTypes.showPopup]: handleShowPopup,
   [UnityMessageTypes.addFriends]: handleAddFriends,
   [UnityMessageTypes.changeLanguage]: handleChangeLanguage,
   [UnityMessageTypes.subtractCoin]: handleSubtractCoin,

@@ -11,7 +11,6 @@ import BlueScreenSplash from '../pages/default/BlueScreenSplash'
 
 import { UnityWrapper } from '../providers/unity/UnityWrapper'
 
-import { O2JamMainLoop } from '../content/O2JamMain'
 import { log } from '../utils/log';
 import { getLanguage, GlobalEnv } from '../config/GlobalEnv';
 
@@ -60,13 +59,15 @@ function PureUnityWebViewInner() {
 
     const handleLoop = () => {
         const isFirst = isFirstGameLoopRef.current
+
+        /*
         O2JamMainLoop({
             isFirstLoop: isFirst,
             onStartUnity: (uuid: string) => {
                 setUserUUID(uuid);
                 setStartUnity(true);
             },
-        })
+        })*/
         if (isFirst) isFirstGameLoopRef.current = false
     }
 

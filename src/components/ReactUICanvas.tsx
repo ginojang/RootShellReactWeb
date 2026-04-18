@@ -1,7 +1,6 @@
 // src/components/ReactUICanvas.tsx
 import { useState, useEffect, useRef } from 'react'
 import { LoadingSpinner } from './content/LoadingSpinner'
-import { WalletProfile } from '../components/content/WalletProfile'
 import { YesNoPopup } from './popups/YesNoPopup'
 import { OkayPopup } from './popups/OkayPopup'
 import { ListViewPopup } from './popups/ListViewPopup'
@@ -57,15 +56,6 @@ export async function handleShowLoadingUI(payload: UnityBodyJsonMessage, id?: nu
 /* ---------------------- Popup 유틸 함수들 ---------------------- */
 
 export const showWalletProfile = (pictureUrl: string | null, displayName: string) => {
-    showPopup(
-        <WalletProfile
-            isFirstMode={true}
-            pictureUrl={pictureUrl ?? null}
-            displayName={displayName}
-            onClose={() => showPopup(null)}
-            onShowBlueScreen={() => showPopup(null)}
-        />
-    )
 };
 
 export const showListViewPopup = (
@@ -240,7 +230,7 @@ export function ReactUICanvas() {
 
     const [spinnerVisible, setSpinnerVisible] = useState(false);
     const [spinnerStartAt, setSpinnerStartAt] = useState(0);
-    const spinnerTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const spinnerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         externalShowLoadingSpinnerUI = ({ isShow, startTime, immediatelyFinishOnClose }) => {

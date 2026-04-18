@@ -1,13 +1,9 @@
 
 // src/content/O2JamMain.ts
-
-import { buyItem, getKaiaInfo, copyWalletAddress } from './O2JamPayment'
-
-import { showLoadingSpinner, showOkayPopup } from '../components/ReactUICanvas'
-import { sendUnityMessage } from '../providers/unity/UnityMessageHandler'
-import { log, logError } from '../utils/log'
-import { getLanguage, setLanguage, setRestarted } from '../config/GlobalEnv'
-import { inviteFriends } from '../providers/LiffProvider'
+import { showLoadingSpinner, showOkayPopup } from '../../components/ReactUICanvas'
+import { sendUnityMessage } from '../../providers/unity/UnityMessageHandler'
+import { log, logError } from '../../utils/log'
+import { getLanguage, setLanguage, setRestarted } from '../../config/GlobalEnv'
 import { toast } from 'react-hot-toast';
 
 import type {
@@ -17,27 +13,16 @@ import type {
     UnityReadJsonMessage,
     UnitySendTransactionMessage,
     UnityBodyJsonMessage,
-} from '../providers/unity/UnityMessageHandler'
+} from '../../providers/unity/UnityMessageHandler'
 
 import {
     saveToLocalCryptoAsync,
     loadFromLocalCryptoAsync,
     deleteAllLocalStorage,
-} from '../utils/localStorage';
+} from '../../utils/localStorage';
 
-import {
-    getWalletUserInfo,
-    getWalletInvenInfo,
-    getStarCoinRewardLocal,
-    addStarCoinRewardLocal, // 로컬 저장
-    setStarCoinRewardLocal,
-    addCoinsReward,         // 백앤드 저장
-    getStarCoinBuyed,
-    setCurrentStageID,
-    spinKaiaWheel,
-    subtractWalletCoins,
-} from './O2JamWalletUsers'
-import { getText } from '../i18n'
+
+import { getText } from '../../i18n'
 
 
 let o2jamUUID: string | null = null
@@ -69,13 +54,13 @@ type O2JamUser = {
     current_world_key: string
     current_stage_id: number
     count_reward_kaia: number
-
 }
 
 export async function O2JamMainLoop({ isFirstLoop, onStartUnity }: O2JamMainLoopOptions) {
 
     if (isFirstLoop) {
 
+        /*
         const result = await getWalletUserInfo();
         log(`[🧠MainLoop 111  ---] getWalletUserInfo result: ${result}`);
         //
@@ -97,7 +82,7 @@ export async function O2JamMainLoop({ isFirstLoop, onStartUnity }: O2JamMainLoop
             } catch (e) {
                 log(`[🧠MainLoop] ❌ JSON 파싱 실패: ${e}`);
             }
-        }
+        }*/
     }
 }
 
@@ -126,7 +111,8 @@ async function InitO2Jam(user: O2JamUser): Promise<boolean> {
             currentStageID = 2;
 
 
-        return await setStarCoinRewardLocal(o2jamSecretKey, Number(user.coins_reward))
+        //return await setStarCoinRewardLocal(o2jamSecretKey, Number(user.coins_reward))
+        return true;
 
     } catch (err) {
         log(`[🎮InitO2Jam] ❌ 초기화 실패: ${err}`);
@@ -180,9 +166,9 @@ export function handlePingPong(_payload: UnitySimpleMessage, id?: number) {
 export async function handleSetCurrentStageID(payload: UnityDataMessage, id?: number) {
     currentStageID = Number(payload.data)
     //currentWorldKey
-    const result = await setCurrentStageID(currentWorldKey, currentStageID)
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonSetCurrentStageIDAck', ok, ok ? result : 'error')
+    //const result = await setCurrentStageID(currentWorldKey, currentStageID)
+    //const ok = result != null
+    //if (id != null) sendUnityMessage(id, 'OnJsonSetCurrentStageIDAck', ok, ok ? result : 'error')
 }
 
 export async function handleGetCurrentStageID(_payload: UnitySimpleMessage, id?: number) {
@@ -211,119 +197,43 @@ export async function handleReadJson(payload: UnityReadJsonMessage, id?: number)
 export async function handleSendTransaction(payload: UnitySendTransactionMessage, id?: number) {
     showLoadingSpinner({ loading: true, message: getText('t022') })  // "결제 정보를 최종 확인 중입니다..."
 
-    const result = await buyItem(payload.mode, payload.key)
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonTransactionAck', ok, ok ? result : 'error')
 }
 
 // stringify 없애자
 export async function handleReqKaiaInfo(_payload: UnitySimpleMessage, id?: number) {
-    const result = await getKaiaInfo()
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonKaiaInfoAck', ok, ok ? JSON.stringify(result) : 'error')
+    //if (id != null) sendUnityMessage(id, 'OnJsonKaiaInfoAck', ok, ok ? JSON.stringify(result) : 'error')
 }
 
 export async function handleCopyWalletAddress(_payload: UnitySimpleMessage, id?: number) {
-    await copyWalletAddress()
-    if (id != null) sendUnityMessage(id, 'OnJsonCopyWalletAddressAck', true, 'nodata')
+
+    //if (id != null) sendUnityMessage(id, 'OnJsonCopyWalletAddressAck', true, 'nodata')
 }
 
 // stringify 없애자
 export async function handleGetInvenInfo(_payload: UnitySimpleMessage, id?: number) {
-    const result = await getWalletInvenInfo()
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonInvenInfoAck', ok, ok ? JSON.stringify(result) : 'error')
+    //const result = await getWalletInvenInfo()
+    //const ok = result != null
+    //if (id != null) sendUnityMessage(id, 'OnJsonInvenInfoAck', ok, ok ? JSON.stringify(result) : 'error')
 }
 
 export async function handleGetStarCoinReward(_payload: UnitySimpleMessage, id?: number) {
-    if (o2jamSecretKey === null) {
-        if (id != null) sendUnityMessage(id, 'OnJsonGetStarCoinRewardAck', false, 'error')
-        return;
-    }
-    const amount = await getStarCoinRewardLocal(o2jamSecretKey)
-    const payload = {
-        uuid: getO2JamUUID(),
-        Amount: amount
-    }
-    if (id != null) sendUnityMessage(id, 'OnJsonGetStarCoinRewardAck', true, JSON.stringify(payload))
+
 }
 
 export async function handelAddStarCoinReward(payload: UnityDataMessage, id?: number) {
-    if (o2jamSecretKey === null) {
-        if (id != null) sendUnityMessage(id, 'OnJsonAddStarCoinRewardAck', false, 'error')
-        return;
-    }
-    await addStarCoinRewardLocal(o2jamSecretKey, Number(payload.data))
 
-    // TODO. 지금은 백앤드 DB에 바로 적용한다. 추후에 검증 루틴 
-    await addCoinsReward(Number(payload.data))
-
-    if (id != null) sendUnityMessage(id, 'OnJsonAddStarCoinRewardAck', true, 'nodata')
 }
 
 export async function handleGetStarCoinBuyed(_payload: UnitySimpleMessage, id?: number) {
-    const result = await getStarCoinBuyed()
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonGetStarCoinBuyedAck', ok, ok ? result : 'error')
 }
 
 export async function handleSpinKaiaWheel(_payload: UnitySimpleMessage, id?: number) {
-    if (kaiaRewardCount === 0) {
-        // await  사용하지 말것
-        spinKaiaWheel()
-        kaiaRewardCount = 1;
-        if (id != null) sendUnityMessage(id, 'OnJsonSpinKaiaWheelAck', true, 'nodata')
-    }
-    else {
-        if (id != null) sendUnityMessage(id, 'OnJsonSpinKaiaWheelAck', false, 'nodata')
-    }
 }
 
 export async function handleAddFriends(_payload: UnitySimpleMessage, id?: number) {
-
-    if (import.meta.env.VITE_APP_TYPE === "dapp_unity_web") {
-
-        await navigator.clipboard.writeText(import.meta.env.VITE_DAPP_URL);
-        toast.success(`'${import.meta.env.VITE_DAPP_URL}' \n ${getText('t023')}`);
-
-    }
-    else if (import.meta.env.VITE_APP_TYPE === "line_unity_web") {
-        const status = await inviteFriends()
-
-        showOkayPopup(
-            getText('t014'),
-            (status === 'success') ? getText('t016') : ((status === 'cancelled') ? getText('t017') : getText('t018')),
-            () => {
-            },
-        )
-    }
-
-    if (id != null) sendUnityMessage(id, 'OnJsonAddFrinedAck', true, 'nodata')
 }
 
 
 export async function handleSubtractCoin(payload: UnityBodyJsonMessage, id?: number) {
 
-    const value = JSON.parse(payload.body_string) as number
-
-    const result = await subtractWalletCoins(value);
-    if (result) {
-        try {
-            const parsed = JSON.parse(result);
-            if (parsed != null && parsed.success) {
-                // ✅ result를 문자열로 변환
-                const resultStr = typeof parsed.result === 'string'
-                    ? parsed.result
-                    : JSON.stringify(parsed.result);
-
-                if (id != null) sendUnityMessage(id, 'OnJsonSubtractCoinAck', true, resultStr)
-                return;
-            }
-        } catch (e) {
-            log(`[handleSubtractCoin] ❌ JSON 파싱 실패: ${e}`);
-        }
-    }
-
-
-    if (id != null) sendUnityMessage(id, 'OnJsonSubtractCoinAck', false, 'nodata')
 }
