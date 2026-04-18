@@ -1,0 +1,127 @@
+{
+    "t001": {
+        "ko": "지금 지갑 어드레스를 변경하면,\n 해당 지갑의 데이터로 게임이 변경 됩니다.\n\n 정말 지갑을 변경하시겠습니까?",
+        "en": "If you change your wallet address now,\nthe game will switch to the new wallet's data.\n\nAre you sure you want to change the wallet?",
+        "ja": "今ウォレットアドレスを変更すると、\nそのウォレットのデータでゲームが変更されます。\n\n本当に変更してもよろしいですか？"
+    },
+    "t002": {
+        "ko": "복사",
+        "en": "Copy",
+        "ja": "コピー"
+    },
+    "t003": {
+        "ko": "변경",
+        "en": "Change",
+        "ja": "変更する"
+    },
+    "t004": {
+        "ko": "구매 내역",
+        "en": "Purchase History",
+        "ja": "購入履歴"
+    },
+    "t005": {
+        "ko": "게임으로 돌아가기!",
+        "en": "Return to the Game!",
+        "ja": "ゲームに戻る！"
+    },
+    "t006": {
+        "ko": "KAIA payment 시스템에 결제 내역 등록 중.",
+        "en": "We're currently registering your KAIA payment details.",
+        "ja": "現在、KAIA決済情報を登録しています。"
+    },
+    "t007": {
+        "ko": "지갑 어드레스를 보안 접속 중입니다..",
+        "en": "Securely connecting to your wallet...",
+        "ja": "ウォレットに安全に接続中です..."
+    },
+    "t008": {
+        "ko": "지갑 어드레스를 Clipboard에 복사했습니다!",
+        "en": "Wallet address copied to clipboard!",
+        "ja": "ウォレットアドレスをクリップボードにコピーしました！"
+    },
+    "t009": {
+        "ko": "네",
+        "en": "Yes",
+        "ja": "はい"
+    },
+    "t010": {
+        "ko": "아니오",
+        "en": "No",
+        "ja": "いいえ"
+    },
+    "t011": {
+        "ko": "확인",
+        "en": "OK",
+        "ja": "確認"
+    },
+    "t012": {
+        "ko": "게임을 시작 중입니다... 잠시만 더 기다려 주세요.",
+        "en": "The game is starting... Please wait a moment.",
+        "ja": "ゲームを開始しています…もう少々お待ちください。"
+    },
+    "t013": {
+        "ko": "로딩 중...   ",
+        "en": "Loading...   ",
+        "ja": "ローディング中...   "
+    },
+    "t014": {
+        "ko": "친구 초대",
+        "en": "Invite Friends",
+        "ja": "友達を招待する"
+    },
+    "t015": {
+        "ko": "DApp 포털로 이동합니다.\n 게임을 종료 하겠습니까?",
+        "en": "You will be redirected to the DApp portal.\nDo you want to exit the game?",
+        "ja": "DAppポータルに移動します。\nゲームを終了してもよろしいですか？"
+    },
+    "t016": {
+        "ko": "친구 초대 메시지 전송 성공!",
+        "en": "Friend invitation message sent successfully!",
+        "ja": "友達招待メッセージを送信しました！"
+    },
+    "t017": {
+        "ko": "메시지 전송을 취소했습니다.",
+        "en": "Message sending was cancelled.",
+        "ja": "メッセージの送信をキャンセルしました。"
+    },
+    "t018": {
+        "ko": "친구 초대 실패",
+        "en": "Failed to invite friend.",
+        "ja": "友達の招待に失敗しました。"
+    },
+    "t019": {
+        "ko": "지갑 상세 프로필",
+        "en": "Wallet Profile",
+        "ja": "ウォレット詳細"
+    },
+    "t020": {
+        "ko": "Wallet-Address",
+        "en": "Wallet-Address",
+        "ja": "Wallet-Address"
+    },
+    "t021": {
+        "ko": "현재 구매 내역이 없습니다.",
+        "en": "There is no purchase history.",
+        "ja": "購入履歴がありません。"
+    },
+    "t022": {
+        "ko": "결제 정보를 최종 확인 중 입니다...",
+        "en": "Verifying your payment details...",
+        "ja": "お支払い情報を最終確認しています..."
+    },
+    "t023": {
+        "ko": "위 주소가 클립보드에 복사 되었습니다.",
+        "en": "The address has been copied to the clipboard.",
+        "ja": "このアドレスがクリップボードにコピーされました。"
+    },
+    "t024": {
+        "ko": "iOS 17 이상에서만\n이용 가능합니다.",
+        "en": "Available only on \niOS 17 or later.",
+        "ja": "Available only on \niOS 17 or later."
+    },
+    "t025": {
+        "ko": "설정 > 일반 > 소프트웨어 업데이트에서\n최신 버전으로 업데이트하세요.",
+        "en": "Go to Settings > General > Software Update\nto update to the latest version.",
+        "ja": "Go to Settings > General > Software Update\nto update to the latest version."
+    }
+}

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/punker.png" />
+
+  <!-- ✅ 모바일 디바이스 대응 + 노치 대응 + 줌 방지 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <title>%VITE_APP_TITLE%</title>
+
+  <!-- ✅ 소셜 공유 태그 (필요 시 커스터마이징) -->
+  <meta property="og:title" content="Punker CCG | WebGame">
+  <meta property="og:description" content="Punker CCG">
+  <meta property="og:image" content="https://aaa.test/imgs/o2jam_ninja_og_image.png">
+  <meta property="og:url" content="https://aaa.test/2007669498-bapZx4j5">
+  <meta name="theme-color" content="#000000">
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    #root {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+
+  <!-- ✅ PC 초기 로딩 고정 사이즈 (환경 변수 기반으로 JS에서 주입) -->
+  <style id="dynamic-pc-size"></style>
+  <script type="module">
+    // 환경 변수는 숫자 형태 문자열로 받고, 없으면 기본값
+    const pcWidthValue = Number(import.meta.env.VITE_PC_WIDTH) || 960;
+    const pcHeightValue = Number(import.meta.env.VITE_PC_HEIGHT) || 600;
+
+    // CSS에서는 px 단위를 붙여서 사용
+    const pcWidth = `${pcWidthValue}px`;
+    const pcHeight = `${pcHeightValue}px`;
+
+    document.getElementById('dynamic-pc-size').textContent = `
+      @media (min-width: 1025px) {
+        #root {
+          width: ${pcWidth};
+          height: ${pcHeight};
+          margin: auto;
+        }
+      }
+    `;
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- ✅ Vite 엔트리 -->
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- ✅ 콜스택 제거용 로그 오버라이드 (🔥 여기 추가) -->
+  <script>
+    (function () {
+      const originalLog = console.log;
+      const originalError = console.error;
+
+      console.log = function (...args) {
+        if (
+          typeof args[0] === 'string' &&
+          args[0].includes('[🎮RootShell-Unity]')
+        ) {
+          originalLog('[🎮]' + args[0].split('\n')[0]); // 첫 줄만
+        } else {
+          originalLog(...args);
+        }
+      };
+
+      console.error = function (...args) {
+        if (
+          typeof args[0] === 'string' &&
+          args[0].includes('[🎮RootShell-Unity]')
+        ) {
+          originalLog('[❌UnityError]' + args[0].split('\n')[0]); // 스택 제거
+        } else {
+          originalError(...args);
+        }
+      };
+    })();
+  </script>
+
+</body>
+
+
+</html>
