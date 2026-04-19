@@ -26,7 +26,7 @@ export const UnityCanvas: React.FC<UnityCanvasProps> = ({
   const width = isMobile ? window.innerWidth : Number(import.meta.env.VITE_PC_WIDTH) || 600;
   const height = isMobile ? window.innerHeight : Number(import.meta.env.VITE_PC_HEIGHT) || 960;
 
-  const DISABLE_START_SPINNER = true;
+  const DISABLE_START_SPINNER = false;
 
   return (
     <div
@@ -94,7 +94,7 @@ export const UnityCanvas: React.FC<UnityCanvasProps> = ({
                         animation: 'fadeinout 2s ease-in-out infinite',
                       }}
                     >
-                      {/*getText('t012') 게임을 시작 중입니다... 잠시만 더 기다려 주세요.*/}
+                      {getText('t012') /*게임을 시작 중입니다... 잠시만 더 기다려 주세요.*/}
                     </div>
                   </>
                 )}
@@ -122,7 +122,7 @@ export const UnityCanvas: React.FC<UnityCanvasProps> = ({
                     zIndex: 0xF9A2C24D + 9,
                   }}
                 >
-                  {/*getText('t013')} {Math.floor(progress * 100)*/}
+                  {getText('t013')} {Math.floor(progress * 100)}
                 </div>
               </div>
             )}

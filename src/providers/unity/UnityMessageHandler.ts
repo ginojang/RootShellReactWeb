@@ -1,23 +1,12 @@
 import { log, logError, logWarn } from '../../utils/log'
-import { setLanguage } from '../../config/GlobalEnv'
+
 
 import {
   handlePingPong,
   handleWriteJson,
   handleReadJson,
-  handleSendTransaction,
-  handleReqKaiaInfo,
-  handleCopyWalletAddress,
-  handleGetInvenInfo,
-  handleGetStarCoinReward,
-  handelAddStarCoinReward,
-  handleGetStarCoinBuyed,
-  handleSetCurrentStageID,
-  handleGetCurrentStageID,
-  handleSpinKaiaWheel,
-  handleAddFriends,
-  handleSubtractCoin,
-} from '../../content/temp/O2JamMain'
+  handleChangeLanguage,
+} from '../../content/GameMainLoop'
 
 
 import {
@@ -27,9 +16,12 @@ import {
 import {
   handleLoadAudioClip,
   handleExecuteAudioAction,
-
 } from '../../media/audio/AudioManager'
 
+
+// 본 스크립트 목적:
+// 유니티에서 수신한 메시지 처리 
+//
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -50,20 +42,7 @@ export const UnityMessageTypes = {
   PingPong: 'pingPong',
   ReadJson: 'readJson',
   WriteJson: 'writeJson',
-  SendTransaction: 'sendTransaction',
-  ReqKaiaInfo: 'reqKaiaInfo',
-  copyWalletAddress: 'copyWalletAddress',
-  getInvenInfo: 'getInvenInfo',
-  getStarCoinReward: 'getStarCoinReward',
-  addStarCoinReward: 'addStarCoinReward',   // 위험한 함수
-  getStarCoinBuyed: 'getStarCoinBuyed',
-  setCurrentStageID: 'setCurrentStageID',   // 위험한 함수
-  getCurrentStageID: 'getCurrentStageID',
-  spinKaiaWheel: 'spinKaiaWheel',
-  showPopup: 'showPopup',
-  addFriends: 'addFriends',
   changeLanguage: 'changeLanguage',
-  subtractCoin: 'subtractCoin',// 위험한 함수
   showLoadingUI: 'showLoadingUI',
 
   loadAudioClip: 'loadAudioClip',
@@ -137,19 +116,7 @@ export const unityMessageHandlers: Record<string, UnityMessageHandler> = {
   [UnityMessageTypes.PingPong]: handlePingPong,
   [UnityMessageTypes.WriteJson]: handleWriteJson,
   [UnityMessageTypes.ReadJson]: handleReadJson,
-  [UnityMessageTypes.SendTransaction]: handleSendTransaction,
-  [UnityMessageTypes.ReqKaiaInfo]: handleReqKaiaInfo,
-  [UnityMessageTypes.copyWalletAddress]: handleCopyWalletAddress,
-  [UnityMessageTypes.getInvenInfo]: handleGetInvenInfo,
-  [UnityMessageTypes.getStarCoinReward]: handleGetStarCoinReward,
-  [UnityMessageTypes.addStarCoinReward]: handelAddStarCoinReward,
-  [UnityMessageTypes.getStarCoinBuyed]: handleGetStarCoinBuyed,
-  [UnityMessageTypes.setCurrentStageID]: handleSetCurrentStageID,
-  [UnityMessageTypes.getCurrentStageID]: handleGetCurrentStageID,
-  [UnityMessageTypes.spinKaiaWheel]: handleSpinKaiaWheel,
-  [UnityMessageTypes.addFriends]: handleAddFriends,
   [UnityMessageTypes.changeLanguage]: handleChangeLanguage,
-  [UnityMessageTypes.subtractCoin]: handleSubtractCoin,
   [UnityMessageTypes.showLoadingUI]: handleShowLoadingUI,
 
   [UnityMessageTypes.loadAudioClip]: handleLoadAudioClip,
@@ -199,13 +166,3 @@ export async function handleUnityMessage(raw: string) {
   }
 }
 
-
-//
-export async function handleChangeLanguage(payload: UnityBodyJsonMessage, id?: number) {
-  const language = payload.body_string;
-  if (language === 'korean' || language === 'japanese' || language === 'english')
-    setLanguage(language)
-
-  if (id != null) sendUnityMessage(id, 'OnShowPopupAck', true);
-
-}

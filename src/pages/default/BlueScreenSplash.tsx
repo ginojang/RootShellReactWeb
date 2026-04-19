@@ -38,6 +38,9 @@ export default function BlueScreenStartSplash({ statusScreen, onExited }: BlueSc
 
     const getMainMessageForStatus = (status: string): string => {
         switch (status) {
+            case 'punker_start':
+                return 'MCP Punker Start App'
+
             case 'idle':
                 return ''
             case 'maintenance':
@@ -68,7 +71,7 @@ export default function BlueScreenStartSplash({ statusScreen, onExited }: BlueSc
             return getText('t025'); //'설정 → 일반 → 소프트웨어 업데이트에서 최신 버전으로 업데이트하세요.'
         }
         else
-            return 'Touch to return to the DApp Portal'
+            return 'Touch to start the Arena game'
     }
 
     const addTextMesh = (scene: THREE.Scene, mesh: THREE.Mesh, currentMesh: any) => {
@@ -81,6 +84,7 @@ export default function BlueScreenStartSplash({ statusScreen, onExited }: BlueSc
     }
 
     const handleTouchEnd = async () => {
+
         if (statusScreen === 'kakao') {
 
             const currentUrl = window.location.href;
@@ -90,31 +94,29 @@ export default function BlueScreenStartSplash({ statusScreen, onExited }: BlueSc
             return;
         }
         else {
-            log('✅ 화면 터치됨 → 현재 앱 종료')
             await onExited()
         }
     }
 
     return (
         <div
-
-            onTouchEnd={handleTouchEnd}
-
+            //onTouchEnd={handleTouchEnd}
+            onClick={handleTouchEnd}
             style={{
-                position: 'absolute',
+                position: 'fixed',   // 부모 레이아웃 영향 없이 뷰포트 기준 고정
                 inset: 0,
                 zIndex: 0,
-                backgroundColor: 'transparent', // 시각적 힌트 없어도 영역 확보됨
+                backgroundColor: 'transparent',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '2rem',
                 fontFamily: 'sans-serif',
-                width: '100vw',
-                height: '100vh', // 추가!
                 pointerEvents: 'auto',
+                touchAction: 'manipulation',
                 lineHeight: '1.2',
+                cursor: 'pointer',
             }}
         >
             <ThreeJsCanvas onInit={handleThreeInit} />

@@ -37,7 +37,7 @@ export const setupThree = (
     canvas.style.width = "100vw"
     canvas.style.height = "100vh"
     canvas.style.zIndex = "0"
-    canvas.style.touchAction = "none"
+    canvas.style.touchAction = "none" // canvas 자체는 none (스크롤 방지), pointerEvents:none으로 터치는 부모에게 전달됨
 
     const scene = new THREE.Scene()
 
@@ -78,11 +78,12 @@ export const setupThree = (
 
 
     // 오브젝트 배치
-    createFractalNebulaPlane(scene)
+    const updateNebula = createFractalNebulaPlane(scene)
 
-    // ✅ 코스믹 요소 생성 → update만 배열에, dispose는 별도 보관
     const updateFns: Array<(delta: number) => void> = []
     const disposers: Array<() => void> = []
+
+    updateFns.push(updateNebula)
 
     const cosmic = generateCosmicElements(scene)
     updateFns.push(cosmic.update)
@@ -103,9 +104,9 @@ export const setupThree = (
     )*/
     const unrealBloom = new UnrealBloomPass(
         new THREE.Vector2(width, height),
-        0.15, // strength ↓
-        0.6,  // radius ↓
-        0.5
+        (GlobalEnv.isMobile === true) ? 0.35 : 0.25, // strength
+        0.7,  // radius
+        0.45  // threshold
     )
 
     composer.addPass(unrealBloom)

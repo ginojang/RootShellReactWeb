@@ -158,10 +158,7 @@ export async function ExitTo(): Promise<void> {
 
 
 
-export function handlePingPong(_payload: UnitySimpleMessage, id?: number) {
-    log(`pingPong 요청 수신`)
-    if (id != null) sendUnityMessage(id, 'OnPingPongAck', true)
-}
+
 
 export async function handleSetCurrentStageID(payload: UnityDataMessage, id?: number) {
     currentStageID = Number(payload.data)
@@ -177,21 +174,6 @@ export async function handleGetCurrentStageID(_payload: UnitySimpleMessage, id?:
         stageID: currentStageID
     }
     if (id != null) sendUnityMessage(id, 'OnJsonGetCurrentStageIDAck', true, JSON.stringify(payload))
-}
-
-export async function handleWriteJson(payload: UnityWriteJsonMessage, id?: number) {
-    //log(`writeJson 요청 수신 - ID: ${id}`)
-    const uuid = getO2JamUUID() ?? 'userdata'
-    await saveToLocalCryptoAsync({ folder: uuid, filename: payload.file, data: payload.data, key8: '0@#KSNA!' })
-    if (id != null) sendUnityMessage(id, 'OnJsonWriteAck', true)
-}
-
-export async function handleReadJson(payload: UnityReadJsonMessage, id?: number) {
-    //log(`readJson 요청 수신 - ID: ${id}`)
-    const uuid = getO2JamUUID() ?? 'userdata'
-    const result = await loadFromLocalCryptoAsync({ folder: uuid, filename: payload.file, key8: '0@#KSNA!' })
-    const ok = result != null
-    if (id != null) sendUnityMessage(id, 'OnJsonReadAck', ok, ok ? result : 'error')
 }
 
 export async function handleSendTransaction(payload: UnitySendTransactionMessage, id?: number) {

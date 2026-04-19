@@ -89,7 +89,7 @@ export const UnityWrapper: React.FC<UnityWrapperStartData> = ({ startMode, userU
   }, []);
 
 
-  // Unity에서 준비 완료 시 호출될 전역 함수 등록
+  // 1. Unity에서 준비 완료 시 호출될 전역 함수 등록
 
   const unityReadyCallCountRef = useRef(0)
 
@@ -105,7 +105,7 @@ export const UnityWrapper: React.FC<UnityWrapperStartData> = ({ startMode, userU
 
 
 
-  // 핸드셰이크 조건이 모두 충족되었는지 체크 후 전송
+  // 2. 핸드셰이크 조건이 모두 충족되었는지 체크 후 전송
   useEffect(() => {
     if (reactReady && unityReady && !handshakeDone.current) {
 
@@ -129,33 +129,8 @@ export const UnityWrapper: React.FC<UnityWrapperStartData> = ({ startMode, userU
     }
   }, [reactReady, unityReady])
 
-  //
-  /*
-  useEffect(() => {
-    window.onUnityMessage = handleUnityMessage;
-    logSuccess("window.onUnityMessage 등록됨");
-   
-    return () => {
-      delete window.onUnityMessage;
-    };
-  }, []);*/
-  let isUnityMessageRegistered = false;
 
-  useEffect(() => {
-    if (!isUnityMessageRegistered) {
-      window.onUnityMessage = handleUnityMessage;
-      isUnityMessageRegistered = true;
-      logSuccess("✅ window.onUnityMessage 최초 등록 완료");
-    } else {
-      logWarn("⚠️ 이미 onUnityMessage가 등록되어 있음. 재등록 방지됨.");
-    }
-
-    return () => {
-      delete window.onUnityMessage;
-      isUnityMessageRegistered = false;
-      logWarn("❌ window.onUnityMessage 해제됨");
-    };
-  }, []);
+  // 일반 메시지 처리 큐 부분은  UnityWrapper 부분 참고.
 
 
   // Unity 인스턴스 생성

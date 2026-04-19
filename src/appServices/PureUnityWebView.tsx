@@ -13,10 +13,13 @@ import { UnityWrapper } from '../providers/unity/UnityWrapper'
 
 import { log } from '../utils/log';
 import { getLanguage, GlobalEnv } from '../config/GlobalEnv';
+import { GameMainLoop } from '../content/GameMainLoop';
 
 
 function PureUnityWebViewInner() {
     const [isReady, setIsReady] = useState(false)
+    const [isStarted, setIsStarted] = useState(false)
+    const [isShowStartBlueScreen, setIsShowStartBlueScreen] = useState(false)
 
     const [startUnity, setStartUnity] = useState(false)
     const [isBlueScreen, setIsBlueScreen] = useState(false)
@@ -24,6 +27,7 @@ function PureUnityWebViewInner() {
     const [userUUID, setUserUUID] = useState<string>('');
 
     const isReadyRef = useRef(false)
+    const isStartedRef = useRef(false)
     const isFirstGameLoopRef = useRef(true)
     const isBlueScreenRef = useRef(false)
 
@@ -44,40 +48,42 @@ function PureUnityWebViewInner() {
             isReadyRef.current = false
         }
         else {
-
+            setBlueScreenStatus('punker_start')
             setIsReady(true)
             isReadyRef.current = true
+            setIsShowStartBlueScreen(true)
         }
     }
 
     const handleStarted = async () => {
+        setIsShowStartBlueScreen(false)
 
-        console.log(`[🌸RootShell]✅ handleStarted ->>  !!4`);
-
-        //
+        setTimeout(() => {
+            setIsStarted(true)
+            isStartedRef.current = true
+        }, 10)
     }
 
     const handleLoop = () => {
         const isFirst = isFirstGameLoopRef.current
+        if (isFirst) isFirstGameLoopRef.current = false
 
-        /*
-        O2JamMainLoop({
+        GameMainLoop({
             isFirstLoop: isFirst,
             onStartUnity: (uuid: string) => {
-                setUserUUID(uuid);
-                setStartUnity(true);
+                setUserUUID(uuid)
+                setStartUnity(true)
             },
-        })*/
-        if (isFirst) isFirstGameLoopRef.current = false
+        })
     }
 
     useEffect(() => {
         const loopId = setInterval(() => {
-            if (isReadyRef.current)
+            if (isStartedRef.current)
                 handleLoop()
         }, 100)
         return () => clearInterval(loopId)
-    }, [isReady])
+    }, [isStarted])
 
     const handleExitApp = () => {
         const exitUrl = import.meta.env.VITE_EXIT_URL
@@ -105,7 +111,7 @@ function PureUnityWebViewInner() {
                 />
             )} {/* z-index = 0 */}
 
-            {isReady && (
+            {isShowStartBlueScreen && (
                 <BlueScreenSplash
                     statusScreen={blueScreenStatus}
                     onExited={handleStarted}
@@ -113,7 +119,7 @@ function PureUnityWebViewInner() {
 
             )}  {/* z-index = 1 */}
 
-            {startUnity && (
+            {isReady && startUnity && (
                 <UnityWrapper
                     startMode={'pure'}
                     userUUID={userUUID}
