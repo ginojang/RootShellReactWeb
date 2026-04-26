@@ -1,8 +1,8 @@
 // src/content/GameMainLoop.ts
 
-import { log } from '../utils/log'
-import { sendUnityMessage } from '../providers/unity/UnityMessageHandler'
-import { setLanguage } from '../config/GlobalEnv'
+import { log } from '../../utils/log'
+import { sendUnityMessage } from '../../providers/unity/UnityMessageHandler'
+import { setLanguage } from '../../config/GlobalEnv'
 
 
 import type {
@@ -12,16 +12,16 @@ import type {
     UnityReadJsonMessage,
     UnitySendTransactionMessage,
     UnityBodyJsonMessage,
-} from '../providers/unity/UnityMessageHandler'
+} from '../../providers/unity/UnityMessageHandler'
 
 import {
     saveToLocalCryptoAsync,
     loadFromLocalCryptoAsync,
     deleteAllLocalStorage,
-} from '../utils/localStorage';
+} from '../../utils/localStorage';
 
 
-import { getText } from '../i18n'
+import { getText } from '../../i18n'
 
 
 

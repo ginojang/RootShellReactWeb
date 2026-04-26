@@ -122,7 +122,7 @@ export const UnityCanvas: React.FC<UnityCanvasProps> = ({
                     zIndex: 0xF9A2C24D + 9,
                   }}
                 >
-                  {getText('t013')} {Math.floor(progress * 100)}
+                  {getText('t013')} {Math.floor(progress * 100)}%
                 </div>
               </div>
             )}

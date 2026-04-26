@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<!-- saved from url=(0012)about:srcdoc -->
+<html lang="ko" data-embedded=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PUNKER 메뉴얼 라이브러리</title>
+  <style>
+    /* Hide outer chrome when embedded in iframe */
+    html[data-embedded] #global-nav,
+    html[data-embedded] #breadcrumb-bar { display:none !important; }
+    html[data-embedded] body::before { top:0; }
+    html[data-embedded] .manual-wrap { padding-top:24px; }
+    html[data-embedded] #view-library .wrap { padding-top:16px; }
+
+    :root{
+      --bg:#071019;
+      --panel:rgba(255,255,255,0.04);
+      --panel-strong:rgba(255,255,255,0.06);
+      --line:rgba(255,255,255,0.1);
+      --paper:#f7f8fb;
+      --muted:rgba(247,248,251,0.66);
+      --muted-2:rgba(247,248,251,0.46);
+      --authority:#ff6b6b;
+      --mcn:#62e4d3;
+      --arena:#ffb84d;
+      --exchange:#6eb2ff;
+      --ops:#ff8f6b;
+      --accent:#e94560;
+      --radius:28px;
+      --radius-sm:18px;
+      --shadow:0 30px 80px rgba(0,0,0,0.24);
+      --font-title:"Inter", "SF Pro Display", "Segoe UI", sans-serif;
+      --font-body:"Inter", "SF Pro Text", "Segoe UI", sans-serif;
+      --font-mono:"Cascadia Code", "Consolas", monospace;
+      --transition:0.22s ease;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:
+      radial-gradient(circle at top left, rgba(255,107,107,0.16), transparent 28%),
+      radial-gradient(circle at top right, rgba(110,178,255,0.16), transparent 26%),
+      linear-gradient(180deg,#081119 0%, #071019 48%, #050c14 100%);
+      color:var(--paper);font-family:var(--font-body);}
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+
+    body::before{
+      content:"";position:fixed;inset:64px 0 0;pointer-events:none;opacity:0.2;
+      background-image:linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size:42px 42px;mask-image:linear-gradient(180deg, #000, transparent 88%);z-index:0;
+    }
+
+    .shell{min-height:100vh;position:relative;isolation:isolate}
+
+    /* === View System === */
+    .view{display:none}
+    .view.active-view{display:block}
+
+    /* === Global Nav === */
+    #global-nav{
+      position:sticky;top:0;z-index:9000;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      height:64px;padding:0 26px;
+      background:rgba(8,18,28,0.85);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    #global-nav .nav-left{display:flex;align-items:center;gap:14px}
+    #global-nav .nav-brand{display:flex;align-items:center;gap:10px}
+    #global-nav .nav-logo{
+      font-family:var(--font-title);font-size:20px;font-weight:700;letter-spacing:-0.5px;
+      background:linear-gradient(135deg, var(--exchange), var(--mcn));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;cursor:pointer;
+    }
+    #global-nav .nav-home-btn{
+      width:38px;height:38px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;
+      color:rgba(255,255,255,0.72);cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:18px;transition:all var(--transition);
+    }
+    #global-nav .nav-home-btn:hover{background:rgba(255,255,255,0.05);color:var(--paper)}
+    #global-nav .nav-pills{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:999px;padding:3px}
+    #global-nav .nav-pill{
+      min-height:42px;padding:9px 20px;border-radius:999px;font-size:14px;font-weight:600;
+      color:rgba(255,255,255,0.72);cursor:pointer;border:none;background:transparent;
+      transition:all var(--transition);white-space:nowrap;
+    }
+    #global-nav .nav-pill:hover{color:var(--paper);background:rgba(255,255,255,0.06)}
+    #global-nav .nav-right{display:flex;align-items:center;gap:10px}
+    #global-nav .nav-version{font-size:12px;color:rgba(255,255,255,0.52);font-family:var(--font-mono);letter-spacing:0.04em;white-space:nowrap}
+    #global-nav .nav-manuals-btn,
+    #global-nav .nav-ops-btn{
+      padding:7px 14px;border-radius:999px;
+      border:1px solid rgba(233,69,96,0.36);
+      background:linear-gradient(135deg, rgba(233,69,96,0.94), rgba(255,143,107,0.92));
+      color:#fff4f6;font-size:12px;font-weight:700;letter-spacing:0.04em;cursor:pointer;
+      transition:all var(--transition);box-shadow:0 10px 24px rgba(233,69,96,0.24);
+    }
+    #global-nav .nav-manuals-btn:hover,
+    #global-nav .nav-ops-btn:hover{
+      filter:brightness(1.06);color:#fff;border-color:rgba(255,143,107,0.5);
+      box-shadow:0 14px 28px rgba(233,69,96,0.3);
+    }
+
+    /* === Breadcrumb === */
+    #breadcrumb-bar{
+      display:block;padding:8px 24px;font-size:12px;color:rgba(255,255,255,0.72);
+      background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.04);
+      position:relative;z-index:1;
+    }
+    #breadcrumb-bar span.sep{margin:0 6px;opacity:.5}
+
+    /* === Shared .btn === */
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 16px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(255,255,255,0.05);color:var(--paper);cursor:pointer;transition:.2s ease;
+    }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,0.08)}
+    .btn.primary{background:rgba(255,107,107,0.12);border-color:rgba(255,107,107,0.28);color:#ffdede}
+    .btn.ghost{color:var(--muted)}
+
+    /* ===================== */
+    /* === LIBRARY VIEW  === */
+    /* ===================== */
+    #view-library .wrap{
+      position:relative;z-index:1;
+      width:min(1728px,calc(100% - 32px));margin:0 auto;padding:26px 0 48px;
+      min-height:calc(100vh - 96px);
+      --app-accent: var(--authority);--app-accent-soft: rgba(255,107,107,.16);
+    }
+    .app-shell-header{
+      display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;
+      min-height:156px;padding:24px 28px;margin-bottom:16px;border-radius:var(--radius);
+      border:1px solid var(--line);box-shadow:var(--shadow);
+      background:radial-gradient(circle at 0% 0%, var(--app-accent-soft), transparent 28%),
+        linear-gradient(180deg, rgba(13,22,33,0.98), rgba(8,15,23,0.94));
+    }
+    .app-shell-copy{display:grid;gap:8px}
+    .app-shell-kicker{display:none!important;
+      display:inline-flex;align-items:center;gap:10px;width:fit-content;
+      padding:8px 14px;border-radius:999px;font-size:.78rem;text-transform:uppercase;
+      letter-spacing:.08em;color:rgba(255,255,255,0.82);
+      background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+    }
+    .app-shell-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--app-accent);box-shadow:0 0 0 5px var(--app-accent-soft)}
+    .app-shell-title{
+      display:flex;align-items:center;gap:10px;margin:0;
+      font-size:clamp(1.8rem,3vw,2.6rem);font-family:var(--font-title);font-weight:700;
+      letter-spacing:-0.03em;line-height:1;text-transform:uppercase;color:var(--app-accent);
+    }
+    .app-shell-mark{
+      width:40px;height:40px;border-radius:14px;display:grid;place-items:center;
+      font:800 1rem/1 var(--font-title);color:#fff4f6;
+      background:linear-gradient(135deg, rgba(255,107,107,0.95), rgba(255,143,107,0.92));
+      box-shadow:0 12px 24px rgba(0,0,0,0.22);
+    }
+    .app-shell-sub{max-width:760px;font-size:.98rem;line-height:1.6;color:rgba(255,255,255,0.76)}
+    .lib-toolbar{
+      margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      padding:18px 22px;border-radius:24px;background:rgba(5,11,17,0.74);
+      border:1px solid var(--line);box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .lib-search{
+      min-width:min(380px,100%);display:flex;align-items:center;gap:10px;padding:0 14px;
+      height:50px;border-radius:999px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04)
+    }
+    .lib-search input{flex:1;border:0;background:transparent;color:var(--paper);outline:none}
+    .filter-row{display:flex;gap:8px;flex-wrap:wrap}
+    .lib-chip{
+      display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;
+      transition:.2s ease;font-size:.9rem;
+    }
+    .lib-chip.active{background:rgba(255,107,107,0.14);border-color:rgba(255,107,107,0.28);color:#ffe2e2}
+    .library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .manual-card{
+      position:relative;padding:24px;border-radius:28px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.08);overflow:hidden;
+      box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .manual-card::before{
+      content:"";position:absolute;inset:0 auto auto 0;height:3px;width:100%;
+      background:linear-gradient(90deg, rgba(255,107,107,0.92), rgba(255,184,77,0.78), rgba(110,178,255,0.78));opacity:.8;
+    }
+    .manual-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+    .manual-type{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2)}
+    .status{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .status.live{background:rgba(98,228,211,0.12);color:var(--mcn)}
+    .status.planned{background:rgba(255,255,255,0.08);color:var(--muted)}
+    .manual-title{margin:14px 0 10px;font-family:var(--font-title);font-size:1.7rem;letter-spacing:-.04em}
+    .manual-summary{font-size:.97rem;line-height:1.7;color:var(--muted)}
+    .meta-row{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      display:inline-flex;align-items:center;padding:7px 11px;border-radius:999px;
+      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:12px;color:var(--muted)
+    }
+    .manual-sections{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+    .manual-sections li{display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:.92rem;line-height:1.55}
+    .manual-sections li::before{content:"";width:7px;height:7px;border-radius:50%;background:rgba(255,107,107,0.7);margin-top:7px;flex:0 0 auto}
+    .manual-actions{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+    .manual-empty{padding:28px;border-radius:24px;border:1px dashed rgba(255,255,255,0.12);color:var(--muted);text-align:center}
+    .footnote{margin-top:28px;font-size:.9rem;color:var(--muted-2);text-align:center}
+
+    /* ======================= */
+    /* === MANUAL VIEWS    === */
+    /* ======================= */
+
+    /* Depth Tab Bar */
+    .manual-depth-bar{position:relative;z-index:1;padding:12px 0 0}
+    .manual-depth-wrap{width:min(1728px, calc(100% - 32px));margin:0 auto}
+    .manual-depth-tabs{
+      display:flex;gap:8px;padding:8px;border-radius:24px;
+      background:rgba(5,11,17,0.74);border:1px solid rgba(255,255,255,0.08);
+      box-shadow:var(--shadow);overflow-x:auto;
+    }
+    .manual-depth-tab{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:48px;padding:12px 18px;border-radius:16px;border:1px solid transparent;
+      font-family:var(--font-title);font-size:.88rem;letter-spacing:.03em;
+      color:rgba(255,255,255,0.72);background:transparent;white-space:nowrap;
+      transition:.22s ease;cursor:pointer;
+    }
+    .manual-depth-tab:hover{color:var(--paper);background:rgba(255,255,255,0.06)}
+    .manual-depth-tab.active-auth{background:rgba(255,107,107,0.18);border-color:rgba(255,107,107,0.22);color:var(--authority)}
+    .manual-depth-tab.active-mcn{background:rgba(98,228,211,0.16);border-color:rgba(98,228,211,0.22);color:var(--mcn)}
+    .manual-depth-tab.active-ops{background:rgba(255,143,107,0.18);border-color:rgba(255,143,107,0.22);color:var(--ops)}
+    .manual-depth-tab.is-disabled{cursor:default;color:rgba(247,248,251,0.42);background:rgba(255,255,255,0.025);pointer-events:none}
+    .manual-depth-badge{display:inline-flex;align-items:center;margin-left:8px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:rgba(247,248,251,0.54);font-size:11px;font-weight:700}
+
+    /* Shared Manual Layout */
+    .manual-wrap{width:min(1460px,calc(100% - 48px));margin:0 auto;padding:36px 0 80px;position:relative;z-index:1}
+    .hero{
+      position:relative;padding:42px;border-radius:34px;overflow:visible;z-index:2;
+      background:radial-gradient(circle at 0% 0%, rgba(255,107,107,0.22), transparent 36%),
+        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.08);box-shadow:var(--shadow);
+    }
+    .hero-mcn{
+      background:radial-gradient(circle at 0% 0%, rgba(98,228,211,0.18), transparent 36%),
+        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    }
+    .hero-ops{
+      background:radial-gradient(circle at 0% 0%, rgba(255,143,107,0.18), transparent 36%),
+        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    }
+    .hero::after{
+      content:"";position:absolute;right:-60px;bottom:-60px;width:280px;height:280px;border-radius:50%;
+      background:radial-gradient(circle, rgba(255,184,77,0.14), transparent 68%);pointer-events:none;
+    }
+    .hero-kicker{display:none!important;
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    }
+    .hero-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--authority);box-shadow:0 0 0 5px rgba(255,107,107,.12)}
+    .hero-kicker-mcn::before{background:var(--mcn);box-shadow:0 0 0 5px rgba(98,228,211,.12)}
+    .hero-kicker-ops::before{background:var(--ops);box-shadow:0 0 0 5px rgba(255,143,107,.12)}
+    .hero-title{margin:18px 0 12px;font-family:var(--font-title);font-size:clamp(2.6rem,5vw,5.1rem);line-height:.92;letter-spacing:-.07em;max-width:980px}
+    .hero-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .hero-copy{max-width:820px;font-size:1rem;line-height:1.78;color:var(--muted)}
+    .hero-meta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);font-size:12px;color:var(--muted)
+    }
+
+    /* Hero Callout (Authority) */
+    .hero-callout{position:absolute;top:42px;right:42px;display:grid;justify-items:end;gap:10px;z-index:120}
+    .hero-callout .btn{white-space:nowrap}
+    .callout-icon{
+      display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;
+      background:rgba(255,107,107,0.22);color:#ffe1e1;border:1px solid rgba(255,107,107,0.28);font-size:12px;font-weight:800;line-height:1;
+    }
+    .open-bubble{
+      position:absolute;top:calc(100% + 12px);right:0;z-index:140;width:min(520px, calc(100vw - 64px));
+      display:grid;gap:12px;padding:18px;border-radius:24px;
+      border:1px solid rgba(255,255,255,0.1);
+      background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      box-shadow:0 24px 80px rgba(0,0,0,0.34);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .open-bubble[hidden]{display:none}
+    .open-bubble::before{
+      content:"";position:absolute;top:-8px;right:28px;width:16px;height:16px;transform:rotate(45deg);
+      background:rgba(255,255,255,0.08);border-top:1px solid rgba(255,255,255,0.1);border-left:1px solid rgba(255,255,255,0.1);
+    }
+    .open-bubble-head{display:grid;gap:6px}
+    .open-bubble-title{font-family:var(--font-title);font-size:1rem;letter-spacing:-.03em}
+    .open-bubble-copy{font-size:.9rem;line-height:1.68;color:var(--muted)}
+    .open-bubble-list{display:grid;gap:10px}
+    .open-bubble-item{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+    .open-bubble-item strong{display:block;font-size:.88rem;color:var(--paper);margin-bottom:6px}
+    .open-bubble-item p{margin:0;font-size:.9rem;line-height:1.68;color:var(--muted)}
+
+    /* Sidebar + Content Layout */
+    .layout{margin-top:28px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start}
+    .sidebar{position:sticky;top:92px;display:grid;gap:16px}
+    .sidebar-card{padding:18px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:28px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .nav-title{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+    .nav-list{margin-top:12px;display:grid;gap:6px}
+    .nav-link{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:16px;
+      color:var(--muted);border:1px solid transparent;transition:.2s ease
+    }
+    .nav-link:hover,.nav-link.active{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.08);color:var(--paper)}
+    .nav-link small{color:var(--muted-2)}
+    .content{display:grid;gap:22px}
+    .section-card{padding:26px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:28px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .section-kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+    .section-title{margin:10px 0 8px;font-family:var(--font-title);font-size:clamp(1.6rem,2.4vw,2.35rem);letter-spacing:-.05em}
+    .section-copy{font-size:.96rem;line-height:1.76;color:var(--muted)}
+
+    /* Overview copy (Authority) */
+    .overview-copy{margin-top:16px;padding:18px;border-radius:22px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.06)}
+    .overview-copy p{margin:0 0 12px;font-size:.98rem;line-height:1.82;color:var(--muted)}
+    .overview-copy p:last-child{margin-bottom:0}
+
+    /* Split / Stack */
+    .split{margin-top:18px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:18px}
+    .stack{display:grid;gap:16px;margin-top:18px}
+    .stack-card{padding:22px;border:1px solid rgba(255,255,255,0.08);background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));box-shadow:var(--shadow);border-radius:28px}
+    .stack-card h3{margin:0 0 8px;font-size:1.08rem}
+    .stack-card p{margin:0;color:var(--muted);line-height:1.72}
+
+    /* Tables */
+    .table-wrap{margin-top:16px;overflow:auto;border-radius:22px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03)}
+    table{width:100%;border-collapse:collapse;min-width:640px}
+    th,td{padding:14px 16px;text-align:left;vertical-align:top}
+    th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);background:rgba(255,255,255,0.04)}
+    td{font-size:.93rem;line-height:1.65;color:var(--muted);border-top:1px solid rgba(255,255,255,0.06)}
+    .code-card{margin-top:18px;padding:18px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);font-family:var(--font-mono);font-size:.85rem;line-height:1.7;color:rgba(247,248,251,0.82)}
+    .footer-note{padding:20px 0 0;color:var(--muted-2);font-size:.9rem;text-align:center}
+
+    /* === Authority Tier Rail === */
+    .tier-rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;position:relative;margin-top:18px;padding:0 14px;overflow:hidden}
+    .tier-rail::before{
+      content:"";position:absolute;left:calc(10% + 4px);right:calc(10% + 4px);top:18px;height:2px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,107,107,0.24), rgba(255,184,77,0.18), rgba(110,178,255,0.18))
+    }
+    .tier-node{
+      appearance:none;border:0;background:none;text-align:left;color:inherit;cursor:pointer;
+      display:grid;gap:8px;padding-top:42px;padding-inline:6px;position:relative;justify-items:center;text-align:center
+    }
+    .tier-node::before{
+      content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;
+      border:2px solid rgba(255,255,255,0.22);background:#08111a;box-shadow:0 0 0 5px #08111a;transition:.2s ease
+    }
+    .tier-node:hover::before,.tier-node.active::before{
+      border-color:rgba(255,107,107,0.9);background:rgba(255,107,107,0.28);
+      box-shadow:0 0 0 5px #08111a, 0 0 0 8px rgba(255,107,107,0.12)
+    }
+    .tier-node-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2)}
+    .tier-node-title{font-family:var(--font-title);font-size:1rem;font-weight:700}
+    .tier-node-range{font-size:.8rem;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase}
+    .tier-panel{padding:22px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:28px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .panel-title{font-family:var(--font-title);font-size:1.34rem;letter-spacing:-.03em}
+    .panel-copy{margin-top:10px;font-size:.95rem;line-height:1.75;color:var(--muted)}
+    .panel-grid{margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .panel-item{padding:14px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}
+    .panel-item strong{display:block;font-size:.84rem;color:var(--paper);margin-bottom:8px}
+
+    /* === Authority Source Groups === */
+    .source-toolbar{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .source-search{
+      min-width:min(320px,100%);display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04)
+    }
+    .source-search input{flex:1;border:0;background:transparent;color:var(--paper);outline:none}
+    .chip-row{display:flex;gap:8px;flex-wrap:wrap}
+    .filter-chip{
+      display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;transition:.2s ease
+    }
+    .filter-chip.active{background:rgba(255,107,107,0.14);border-color:rgba(255,107,107,0.28);color:#ffe2e2}
+    .source-list{margin-top:18px;display:grid;gap:20px}
+    .source-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .source-group-title{font-family:var(--font-title);font-size:1.18rem;letter-spacing:-.03em}
+    .source-group-toggle{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;transition:.2s ease
+    }
+    .source-group-toggle:hover{background:rgba(255,255,255,0.08);color:var(--paper)}
+    .source-group-shell{
+      margin-top:14px;display:grid;grid-template-columns:240px minmax(0, 1fr);gap:18px;align-items:stretch;
+      padding:18px;border-radius:24px;border:1px solid rgba(255,255,255,0.08);
+      background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02))
+    }
+    .source-group-shell.is-expanded .source-group-scroll{max-height:none}
+    .source-group-shell.is-expanded .source-group-nav-list{max-height:none}
+    .source-group-nav{display:grid;gap:10px;padding:0 18px 0 0;border-right:1px solid rgba(255,255,255,0.08);align-content:start;height:100%}
+    .source-group-nav-copy{font-size:.86rem;line-height:1.62;color:var(--muted)}
+    .source-group-nav-list{display:grid;gap:8px;max-height:520px;overflow:auto;padding-right:4px}
+    .source-group-nav-btn{
+      appearance:none;border:0;border-left:2px solid transparent;background:none;color:var(--muted);
+      text-align:left;padding:10px 0 10px 12px;border-radius:0 14px 14px 0;cursor:pointer;transition:.2s ease;font:inherit;line-height:1.45
+    }
+    .source-group-nav-btn:hover,.source-group-nav-btn.active{background:rgba(255,255,255,0.04);border-left-color:rgba(255,107,107,0.9);color:var(--paper)}
+    .source-group-scroll{display:grid;gap:0;max-height:520px;overflow:auto;padding-right:8px;scroll-behavior:smooth}
+    .source-item-panel{display:grid;gap:14px;padding:6px 0 20px 0;transition:border-color .2s ease, background .2s ease}
+    .source-item-panel + .source-item-panel{margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08)}
+    .source-item-panel.is-active{background:linear-gradient(90deg, rgba(255,107,107,0.05), transparent 34%)}
+    .source-title{font-size:1rem;font-weight:700;line-height:1.5}
+    .source-body{display:grid;gap:12px}
+    .field{display:grid;grid-template-columns:156px minmax(0, 1fr);gap:16px;align-items:start;padding:12px 0;border-top:1px solid rgba(255,255,255,0.08)}
+    .field:first-child{border-top:0;padding-top:0}
+    .field strong{display:flex;align-items:center;gap:8px;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+    .field strong::before{content:"•";font-size:1rem;line-height:1;color:var(--authority)}
+    .field p,.field li{font-size:.93rem;line-height:1.72;color:var(--muted);margin:0}
+    .field ul{margin:0;padding-left:18px}
+
+    /* === Authority Integrations === */
+    .integrations{margin-top:18px;display:grid;gap:22px}
+    .integration-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .integration-summary-item{display:grid;gap:8px;padding:0 0 14px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .integration-summary-value{font-family:var(--font-title);font-size:1.7rem;letter-spacing:-.05em;color:var(--paper)}
+    .integration-summary-label{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2)}
+    .integration-summary-copy{font-size:.9rem;line-height:1.62;color:var(--muted)}
+    .integration-list{display:grid;gap:0;border-top:1px solid rgba(255,255,255,0.08)}
+    .integration-row{
+      display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.95fr) minmax(180px,.75fr) auto;
+      gap:18px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.08);align-items:start
+    }
+    .integration-system{display:grid;gap:6px}
+    .integration-title{font-family:var(--font-title);font-size:1.08rem}
+    .integration-note{font-size:.84rem;line-height:1.58;color:var(--muted-2)}
+    .integration-column{display:grid;gap:6px}
+    .integration-label{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2)}
+    .integration-value{font-size:.93rem;line-height:1.68;color:var(--muted)}
+    .status.partial{background:rgba(255,184,77,0.14);color:var(--arena)}
+    .status.idle{background:rgba(255,107,107,0.14);color:#ffd8d8}
+
+    /* Authority Stack Items */
+    .auth-stack{display:grid;gap:0;margin-top:18px;border-top:1px solid rgba(255,255,255,0.08)}
+    .stack-item{padding:18px 0}
+    .stack-item + .stack-item{border-top:1px solid rgba(255,255,255,0.08)}
+    .stack-item-title{font-size:1rem;font-weight:700;line-height:1.5;color:var(--paper)}
+    .stack-item-copy{margin-top:10px;color:var(--muted);font-size:.95rem;line-height:1.78}
+    .stack-item-copy ul{margin:10px 0 0;padding-left:18px}
+
+    /* === Responsive === */
+    @media (max-width: 1320px){.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width: 1180px){
+      .layout,.split,.panel-grid,.source-group-shell,.integration-summary,.integration-row{grid-template-columns:1fr}
+      .tier-rail{grid-template-columns:1fr}
+      .sidebar{position:static}
+      .source-group-nav{padding:0 0 12px;border-right:0;border-bottom:1px solid rgba(255,255,255,0.08)}
+      .source-group-nav-list{display:flex;overflow:auto;max-height:none;padding-bottom:4px}
+      .source-group-nav-btn{min-width:max-content;border-left:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 4px}
+      .source-group-nav-btn:hover,.source-group-nav-btn.active{border-left-color:transparent;border-bottom-color:rgba(255,107,107,0.9)}
+    }
+    @media (max-width: 1040px){
+      .app-shell-header{grid-template-columns:1fr}
+      .library-grid{grid-template-columns:1fr}
+    }
+    @media (max-width: 760px){
+      #global-nav{padding:0 16px;height:auto;min-height:64px;flex-wrap:wrap;justify-content:flex-start}
+      #global-nav .nav-left{width:100%;justify-content:flex-start;flex-wrap:wrap}
+      #global-nav .nav-pills{order:3;overflow:auto;max-width:100%}
+      #global-nav .nav-right{margin-left:auto}
+      #breadcrumb-bar{padding:8px 16px}
+      .manual-depth-wrap{width:min(1728px, calc(100% - 32px))}
+      #view-library .wrap{width:min(100% - 32px, 1728px);padding:20px 0 40px}
+      .manual-wrap{width:min(100% - 28px, 1460px)}
+      .app-shell-header,.manual-card,.hero,.section-card,.tier-panel,.sidebar-card{padding:22px}
+      .lib-toolbar{padding:16px}
+      .lib-search{min-width:100%}
+      .source-search{min-width:100%}
+      .hero-callout{top:22px;right:22px}
+      .open-bubble{right:auto;left:0;width:min(100%, 520px)}
+      .open-bubble::before{left:28px;right:auto}
+      .field{grid-template-columns:1fr;gap:8px}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- === Global Nav === -->
+    <nav id="global-nav">
+      <div class="nav-left">
+        <button class="nav-home-btn" onclick="goHome()" title="홈으로">⌂</button>
+        <div class="nav-brand">
+          <div class="nav-logo" onclick="goHome()">PUNKER</div>
+          <span class="nav-version">V1.86</span>
+        </div>
+        <div class="nav-pills">
+          <button class="nav-pill" onclick="openDemoApp(&#39;mcn&#39;)">MCN 마케팅</button>
+          <button class="nav-pill" onclick="openDemoApp(&#39;arena&#39;)">아레나 게임</button>
+          <button class="nav-pill" onclick="openDemoApp(&#39;exchange&#39;)">교환소</button>
+          <button class="nav-pill" onclick="openDemoApp(&#39;authority&#39;)">권위 시스템</button>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="nav-manuals-btn" onclick="showView(&#39;library&#39;)">메뉴얼</button>
+        <button class="nav-ops-btn" onclick="openDemoApp(&#39;admin&#39;)">운영 콘솔</button>
+      </div>
+    </nav>
+    <div id="breadcrumb-bar">Punker <span class="sep">/</span> 메뉴얼 <span class="sep">/</span> MCN 마케팅 메뉴얼</div>
+
+    <!-- ======================== -->
+    <!-- === LIBRARY VIEW     === -->
+    <!-- ======================== -->
+    <div id="view-library" class="view">
+      <main class="wrap">
+        <section class="app-shell-header">
+          <div class="app-shell-copy">
+            <div class="app-shell-kicker">Manuals Library</div>
+            <h1 class="app-shell-title"><span class="app-shell-mark">P</span> PUNKER 메뉴얼 라이브러리</h1>
+            <div class="app-shell-sub">
+              프로토타입과 별도로 읽는 규칙집, 운영 가이드, 제품 메뉴얼을 한 곳에서 관리합니다.
+              지금은 <strong>PUNKVISM Authority Gauge System</strong>, <strong>MCN 마케팅</strong>, <strong>Ops Console</strong> 메뉴얼이 포함되어 있고, 이후 Arena와 Exchange 문서가 같은 구조로 추가됩니다.
+            </div>
+          </div>
+        </section>
+
+        <section class="lib-toolbar">
+          <label class="lib-search" aria-label="매뉴얼 검색">
+            <span>⌕</span>
+            <input id="manual-search" type="search" placeholder="매뉴얼 제목, 설명, 섹션으로 검색">
+          </label>
+          <div class="filter-row" id="manual-filters"><button class="lib-chip active" onclick="setLibFilter(&#39;all&#39;)">전체</button><button class="lib-chip " onclick="setLibFilter(&#39;published&#39;)">발행됨</button><button class="lib-chip " onclick="setLibFilter(&#39;planned&#39;)">준비중</button><button class="lib-chip " onclick="setLibFilter(&#39;system&#39;)">시스템</button><button class="lib-chip " onclick="setLibFilter(&#39;product&#39;)">제품</button><button class="lib-chip " onclick="setLibFilter(&#39;ops&#39;)">운영</button></div>
+        </section>
+
+        <section class="library-grid" id="manual-grid"><article class="manual-card"><div class="manual-top"><div><div class="manual-type">시스템 메뉴얼 · Authority</div><div class="manual-title">PUNKVISM Authority Gauge System</div></div><span class="status live">발행됨</span></div><div class="manual-summary">Level 1~100, Tier 1~5, 17개 EXP Source, 외부 연동, 운영 요구사항, 어뷰징 방지를 한 번에 읽을 수 있는 규칙집입니다.</div><div class="meta-row"><span class="pill">게시일 2026.04.13</span><span class="pill">섹션 7개</span></div><ul class="manual-sections"><li>1. System Overview</li><li>Tier Structure &amp; Title</li><li>EXP Priority Hierarchy (가중치 우선순위)</li><li>2. EXP Sources (경험치 획득 항목 상세)</li></ul><div class="manual-actions"><button class="btn primary" onclick="showView(&#39;authority&#39;)">메뉴얼 열기</button></div></article><article class="manual-card"><div class="manual-top"><div><div class="manual-type">제품 메뉴얼 · MCN</div><div class="manual-title">MCN 마케팅 메뉴얼</div></div><span class="status live">발행됨</span></div><div class="manual-summary">지갑 연결, 권한 분기, 프로젝트별 미션, 제출/검수, 보상 원장, Tier와 운영 기능을 정리한 제품 메뉴얼입니다.</div><div class="meta-row"><span class="pill">게시일 2026.04.14</span><span class="pill">섹션 5개</span></div><ul class="manual-sections"><li>Product Overview</li><li>Access &amp; Role Model</li><li>Project &amp; Mission Flow</li><li>Submission &amp; Review</li></ul><div class="manual-actions"><button class="btn primary" onclick="showView(&#39;mcn&#39;)">메뉴얼 열기</button></div></article><article class="manual-card"><div class="manual-top"><div><div class="manual-type">제품 메뉴얼 · Arena</div><div class="manual-title">Arena 게임 메뉴얼</div></div><span class="status live">발행됨</span></div><div class="manual-summary">제품 개요, 역할 구조(Player/Supporter/Operator), 카드형 스쿼드 기준선을 임시로 정리한 Draft 문서입니다.</div><div class="meta-row"><span class="pill">게시일 2026.04.14</span><span class="pill">섹션 3개</span></div><ul class="manual-sections"><li>Unified Experience</li><li>역할 구조</li><li>카드형 스쿼드 기준선</li></ul><div class="manual-actions"><button class="btn primary" onclick="showView(&#39;arena&#39;)">메뉴얼 열기</button></div></article><article class="manual-card"><div class="manual-top"><div><div class="manual-type">제품 메뉴얼 · Exchange</div><div class="manual-title">Exchange 메뉴얼</div></div><span class="status planned">준비중</span></div><div class="manual-summary">NFT Purchase, PVT Staking, Burn 입력과 Authority 연결을 정리할 예정입니다.</div><div class="meta-row"><span class="pill">게시일 준비중</span><span class="pill">섹션 4개</span></div><ul class="manual-sections"><li>구매 흐름</li><li>스테이킹 밴드</li><li>Burn 입력</li><li>앱 간 연결</li></ul><div class="manual-actions"><button class="btn ghost" type="button" disabled="">준비중</button></div></article><article class="manual-card"><div class="manual-top"><div><div class="manual-type">운영 메뉴얼 · Ops</div><div class="manual-title">Ops Console 메뉴얼</div></div><span class="status live">발행됨</span></div><div class="manual-summary">대시보드, GP 원장, 환전 파이프라인, 리스크 큐, 계정 제어, Authority 운영, 인시던트 대응을 정리한 운영 메뉴얼입니다.</div><div class="meta-row"><span class="pill">게시일 2026.04.14</span><span class="pill">섹션 5개</span></div><ul class="manual-sections"><li>Console Overview</li><li>Ledger &amp; Pipeline</li><li>Risk &amp; Account Control</li><li>Authority Ops</li></ul><div class="manual-actions"><button class="btn primary" onclick="showView(&#39;ops&#39;)">메뉴얼 열기</button></div></article></section>
+        <div class="footnote">하위 페이지는 이 라이브러리에 계속 추가됩니다.</div>
+      </main>
+    </div>
+
+    <!-- ======================== -->
+    <!-- === AUTHORITY VIEW    === -->
+    <!-- ======================== -->
+    <div id="view-authority" class="view">
+      <div class="manual-depth-bar">
+        <div class="manual-depth-wrap">
+          <div class="manual-depth-tabs">
+            <a class="manual-depth-tab active-auth" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;authority&#39;); return false;">권위 시스템 규칙집</a>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;mcn&#39;); return false;">MCN 마케팅 메뉴얼</a>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">아레나 게임 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">교환소 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;ops&#39;); return false;">운영 콘솔 메뉴얼</a>
+          </div>
+        </div>
+      </div>
+
+      <main class="manual-wrap">
+        <section class="hero">
+          <div class="hero-kicker">인터랙티브 메뉴얼</div>
+          <div class="hero-title-row">
+            <h1 class="hero-title">PUNKVISM Authority Gauge System</h1>
+            <div class="hero-callout">
+              <button class="btn primary" id="open-items-toggle" type="button" aria-expanded="false" aria-controls="open-items-bubble"><span class="callout-icon" aria-hidden="true">!</span>확인 및 보완 필요사항</button>
+              <div class="open-bubble" id="open-items-bubble" hidden=""></div>
+            </div>
+          </div>
+          <div class="hero-copy">
+            PUNKVISM Authority Gauge(권위 게이지)는 PUNKER 안에서 유저의 전체 기여도를 하나의 레벨 시스템으로 보여준다.
+            이 페이지는 <strong>PUNKVISM Authority Gauge System Spec v1.0</strong>의 핵심 내용을 웹 메뉴얼로 다시 구성한 문서다.
+            티어 구조, 17개 EXP Source, 외부 연동, 운영 요구사항, 어뷰징 방지 로직을 한 곳에서 쉽게 읽을 수 있다.
+          </div>
+          <div class="hero-meta">
+            <span class="chip">게시일 2026.04.13</span>
+            <span class="chip">섹션 5개</span>
+            <span class="chip">티어 5단계</span>
+            <span class="chip">EXP Source 17개</span>
+            <span class="chip">연동 8개</span>
+            <span class="chip">운영 요구사항</span>
+          </div>
+        </section>
+
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-card">
+              <div class="nav-title">목차</div>
+              <nav class="nav-list" id="auth-manual-nav"></nav>
+            </div>
+          </aside>
+
+          <div class="content">
+            <section class="section-card" id="auth-section-overview">
+              <div class="section-kicker">1. System Overview</div>
+              <h2 class="section-title">System Overview</h2>
+              <div class="section-copy">Rulebook의 개요, Tier Structure, EXP Priority Hierarchy를 한 화면에서 읽기 쉽게 정리했다.</div>
+              <div class="overview-copy" id="auth-overview-copy"></div>
+              <div class="split">
+                <div style="display:grid;gap:8px">
+                  <div class="section-kicker">티어 보기</div>
+                  <div class="section-title" style="font-size:1.5rem;margin-top:8px">Tier Structure &amp; Title</div>
+                  <div class="section-copy">각 티어를 누르면 해당 단계의 레벨 구간, 칭호, 설명을 자세히 볼 수 있다.</div>
+                  <div class="tier-rail" id="auth-tier-rail"></div>
+                </div>
+                <div class="tier-panel">
+                  <div class="section-kicker">선택한 티어</div>
+                  <div class="panel-title" id="auth-tier-panel-title"></div>
+                  <div class="panel-copy" id="auth-tier-panel-copy"></div>
+                  <div class="panel-grid" id="auth-tier-panel-grid"></div>
+                </div>
+              </div>
+              <div class="table-wrap" style="margin-top:20px">
+                <table>
+                  <thead><tr><th>우선순위</th><th>분류</th><th>이유</th></tr></thead>
+                  <tbody id="auth-priority-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="section-card" id="auth-section-sources">
+              <div class="section-kicker">2. EXP Sources (경험치 획득 항목 상세)</div>
+              <h2 class="section-title">EXP Sources</h2>
+              <div class="section-copy">EXP는 Source별로 쌓인다. 각 항목은 고유 ID를 가지며, 운영자가 나중에 수치를 조정할 수 있게 설계한다.</div>
+              <div class="source-toolbar">
+                <label class="source-search" aria-label="EXP Source 검색">
+                  <span>⌕</span>
+                  <input id="auth-source-search" type="search" placeholder="EXP Source, Trigger, Data Source로 검색">
+                </label>
+                <div class="chip-row" id="auth-source-filters"></div>
+              </div>
+              <div class="source-list" id="auth-source-groups"></div>
+            </section>
+
+            <section class="section-card" id="auth-section-integrations">
+              <div class="section-kicker">3. External Integration Map (외부 연동 현황)</div>
+              <h2 class="section-title">외부 연동 현황</h2>
+              <div class="section-copy">Authority Gauge 시스템이 각 시스템과 지금 어느 정도 연결되어 있는지 상태 중심으로 정리했다.</div>
+              <div class="integrations" id="auth-integration-grid"></div>
+            </section>
+
+            <section class="section-card" id="auth-section-admin">
+              <div class="section-kicker">4. Admin Requirements (관리자 기능 요구사항)</div>
+              <h2 class="section-title">관리자 기능 요구사항</h2>
+              <div class="section-copy">Authority Gauge 시스템 관리자 페이지에서 제공해야 하는 기능이다.</div>
+              <div class="auth-stack" id="auth-admin-stack"></div>
+            </section>
+
+            <section class="section-card" id="auth-section-safeguards">
+              <div class="section-kicker">5. Anti-Abuse Safeguards (어뷰징 방지)</div>
+              <h2 class="section-title">어뷰징 방지</h2>
+              <div class="section-copy">반복 행동, 중복 처리, 조기 해지 등 악용 가능성을 줄이기 위한 기본 장치다.</div>
+              <div class="auth-stack" id="auth-safeguard-stack"></div>
+            </section>
+          </div>
+        </div>
+        <div class="footer-note">PUNKVISM Authority Gauge System Spec v1.0 기반 인터랙티브 메뉴얼</div>
+      </main>
+    </div>
+
+    <!-- ======================== -->
+    <!-- === MCN VIEW          === -->
+    <!-- ======================== -->
+    <div id="view-mcn" class="view active-view">
+      <div class="manual-depth-bar">
+        <div class="manual-depth-wrap">
+          <div class="manual-depth-tabs">
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;authority&#39;); return false;">권위 시스템 규칙집</a>
+            <a class="manual-depth-tab active-mcn" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;mcn&#39;); return false;">MCN 마케팅 메뉴얼</a>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">아레나 게임 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">교환소 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;ops&#39;); return false;">운영 콘솔 메뉴얼</a>
+          </div>
+        </div>
+      </div>
+
+      <main class="manual-wrap">
+        <section class="hero hero-mcn">
+          <div class="hero-kicker hero-kicker-mcn">인터랙티브 메뉴얼</div>
+          <h1 class="hero-title">PUNKER MCN Marketing</h1>
+          <div class="hero-copy">PUNKER MCN은 사용자의 지갑 자산과 활동 자격을 판별하고, 프로젝트별 미션을 배정하고, 제출 결과를 자동 또는 반자동으로 검수한 뒤, 보상 원장과 등급, 그리고 Authority 성장 시스템으로 연결하는 운영형 마케팅 플랫폼이다.</div>
+          <div class="hero-meta">
+            <span class="chip">게시일 2026.04.14</span>
+            <span class="chip">섹션 6개</span>
+            <span class="chip">지갑 연결 / 권한 분기</span>
+            <span class="chip">미션 / 제출 / 검수</span>
+            <span class="chip">보상 원장 / Tier</span>
+          </div>
+        </section>
+
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-card">
+              <div class="nav-title">목차</div>
+              <nav class="nav-list" id="mcn-manual-nav"><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-overview">1. Product Overview</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-access">2. Access &amp; Role Model</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-projects">3. Project &amp; Mission Flow</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-review">4. Submission &amp; Review</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-rewards">5. Rewards, Milestone &amp; Tier</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#mcn-section-admin">6. Admin &amp; Operations</a></nav>
+            </div>
+          </aside>
+          <div class="content">
+            <section class="section-card" id="mcn-section-overview">
+              <div class="section-kicker">1. Product Overview</div>
+              <h2 class="section-title">MCN이 해결하는 일</h2>
+              <div class="section-copy">MCN은 지갑 연결과 NFT 권한 판별을 시작점으로, 프로젝트별 미션 배정, 제출 검수, 보상 적립, Tier/Authority 반영까지 이어지는 운영형 플랫폼이다.</div>
+              <div class="split">
+                <div class="stack-card"><h3>제품 한 줄 정의</h3><p>사용자의 지갑 자산과 활동 자격을 판별하고, 프로젝트별 미션 참여 권한과 보상, 후속 서비스 진입 자격까지 연결하는 운영형 마케팅 플랫폼.</p></div>
+                <div class="stack-card"><h3>핵심 루프</h3><p>지갑 연결 → 사용자 분류 → 권한별 미션 노출 → 제출 증빙 → 검수 → 보상 적립 → Tier 및 Authority 반영</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="mcn-section-access">
+              <div class="section-kicker">2. Access &amp; Role Model</div>
+              <h2 class="section-title">권한과 사용자 유형</h2>
+              <div class="section-copy">MCN의 모든 경험은 지갑 연결 이후의 권한 분기에서 시작되며, 사용자 유형에 따라 노출되는 매장과 미션이 달라진다.</div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>사용자 유형</th><th>설명</th><th>가능한 경험</th></tr></thead>
+                  <tbody>
+                    <tr><td>미연결 방문자</td><td>지갑을 연결하지 않은 상태</td><td>공개 소개, 참여 구조, 연결 유도</td></tr>
+                    <tr><td>비홀더</td><td>지갑은 연결했지만 RWA NFT는 없음</td><td>일부 성장 미션(Type B), 홀더 전환 유도</td></tr>
+                    <tr><td>RWA NFT 홀더</td><td>보유 프로젝트 기준 참여 자격 확보</td><td>Type A + Type B, 프로젝트별 대시보드</td></tr>
+                    <tr><td>상위 Tier 인플루언서</td><td>활동/영향력/신뢰가 높은 사용자</td><td>Premium 미션, 우선 배정, 후속 서비스 연결</td></tr>
+                    <tr><td>운영 관리자</td><td>프로젝트, 미션, 검수, 정산, 리스크 담당</td><td>관리자 콘솔과 운영 기능</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="section-card" id="mcn-section-projects">
+              <div class="section-kicker">3. Project &amp; Mission Flow</div>
+              <h2 class="section-title">프로젝트와 미션 구조</h2>
+              <div class="section-copy">사용자는 자신이 보유한 프로젝트를 기준으로 대시보드와 미션 보드를 확인한다. 미션은 Type A / Type B / Type C로 나뉘고, 권한과 보상 정책이 다르게 적용된다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>My Store Dashboard</h3><p>보유 NFT에 따라 남산타워, 을지로 갈비 같은 프로젝트 카드가 활성화된다. 카드에는 접근 상태와 적용 수익률, 현재 등급이 함께 표시된다.</p></div>
+                <div class="stack-card"><h3>Mission Board</h3><p>선택한 프로젝트 기준으로 미션 목록을 보여주며, 보유하지 않은 프로젝트 미션은 참여할 수 없거나 제한된다.</p></div>
+                <div class="stack-card"><h3>미션 유형</h3><p>Type A는 홀더 대상 기본 활동, Type B는 성장형 활동, Type C는 상위 Tier 대상 확장 활동으로 이해하는 것이 기준선이다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="mcn-section-review">
+              <div class="section-kicker">4. Submission &amp; Review</div>
+              <h2 class="section-title">제출과 검수</h2>
+              <div class="section-copy">플랫폼별 다른 제출 폼을 사용하며, 결과는 자동 또는 수동 검수 상태 모델로 관리된다.</div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>상태</th><th>의미</th><th>다음 액션</th></tr></thead>
+                  <tbody>
+                    <tr><td>draft</td><td>작성 중</td><td>제출 준비</td></tr>
+                    <tr><td>submitted</td><td>제출 완료</td><td>사전 검수 대기</td></tr>
+                    <tr><td>in_ai_review</td><td>규칙/AI 검수 중</td><td>결과 대기</td></tr>
+                    <tr><td>manual_review</td><td>수동 심사 필요</td><td>운영자 확인</td></tr>
+                    <tr><td>approved</td><td>승인 완료</td><td>정산 반영 전</td></tr>
+                    <tr><td>revise_requested</td><td>수정 후 재제출 요청</td><td>다시 제출</td></tr>
+                    <tr><td>rejected</td><td>최종 반려</td><td>사유 확인</td></tr>
+                    <tr><td>reward_settled</td><td>정산 완료</td><td>원장 조회</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="code-card">플랫폼별 기본 기준
+
+- Instagram: URL 유효성 + OCR + 해시태그 판독
+- YouTube: 제목/설명/공개 상태 확인
+- Blog: 본문 크롤링 기반 확인
+- TikTok / X: 기본 manual_review 비중이 높음</div>
+            </section>
+
+            <section class="section-card" id="mcn-section-rewards">
+              <div class="section-kicker">5. Rewards, Milestone &amp; Tier</div>
+              <h2 class="section-title">보상과 등급</h2>
+              <div class="section-copy">보상은 원장 단위로 분리 관리되고, NFT 보유량 기반 마일스톤과 Tier 구조가 함께 작동한다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>Reward Ledger</h3><p>Essential / Growth / Bonus Ledger를 분리해 어떤 활동에서 어떤 자산이 쌓였는지 보여준다.</p></div>
+                <div class="stack-card"><h3>Milestone Logic</h3><p>NFT 보유 수량이 5개 단위 기준에 도달할 때마다 미션 요구량이 압축되며, 30개 이상 구간은 VVIP 자문 리포트 Unlock 구조로 이어진다.</p></div>
+                <div class="stack-card"><h3>Tier &amp; Authority</h3><p>승인된 MCN 활동은 사용자 Tier와 Authority 입력으로 이어지며, MCN은 성장 시스템의 직접 입력원 중 하나다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="mcn-section-admin">
+              <div class="section-kicker">6. Admin &amp; Operations</div>
+              <h2 class="section-title">운영자 기능</h2>
+              <div class="section-copy">운영자는 프로젝트, 미션, 검수, 정산, 리스크, Authority 연계 포인트를 관리한다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>프로젝트 관리</h3><p>프로젝트명, NFT 컨트랙트, 활성 기간, 정산 리듬, 기본 보상 규칙을 설정한다.</p></div>
+                <div class="stack-card"><h3>미션 관리</h3><p>대상 권한 그룹, 플랫폼, 필수 해시태그, 보상 자산, 검수 방식, 중복 제출 허용 여부를 설정한다.</p></div>
+                <div class="stack-card"><h3>검수 / 정산 / 리스크</h3><p>노란불 심사 대기, 배치 정산, CSV 다운로드, 어뷰징 탐지와 운영 로그를 같은 운영 레이어에서 관리한다.</p></div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="footer-note">PUNKER V1.86 MCN 구조와 Notion 기준선을 바탕으로 재구성한 인터랙티브 메뉴얼</div>
+      </main>
+    </div>
+
+    <!-- ======================== -->
+    <!-- === OPS VIEW          === -->
+    <!-- ======================== -->
+    <div id="view-ops" class="view">
+      <div class="manual-depth-bar">
+        <div class="manual-depth-wrap">
+          <div class="manual-depth-tabs">
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;authority&#39;); return false;">권위 시스템 규칙집</a>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;mcn&#39;); return false;">MCN 마케팅 메뉴얼</a>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">아레나 게임 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">교환소 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <a class="manual-depth-tab active-ops" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;ops&#39;); return false;">운영 콘솔 메뉴얼</a>
+          </div>
+        </div>
+      </div>
+
+      <main class="manual-wrap">
+        <section class="hero hero-ops">
+          <div class="hero-kicker hero-kicker-ops">인터랙티브 메뉴얼</div>
+          <h1 class="hero-title">PUNKER Ops Console</h1>
+          <div class="hero-copy">Ops Console은 정산, 계정 상태, 리스크, 권위 정책, 인시던트 대응을 운영 관점에서 관리하는 백오피스 화면이다. 이 페이지는 V1.86 기준 운영 콘솔의 구조와 역할을 메뉴얼 형식으로 다시 정리한 문서다.</div>
+          <div class="hero-meta">
+            <span class="chip">게시일 2026.04.14</span>
+            <span class="chip">섹션 6개</span>
+            <span class="chip">대시보드 / 원장 / 리스크</span>
+            <span class="chip">권위 정책 / 인시던트</span>
+          </div>
+        </section>
+
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-card">
+              <div class="nav-title">목차</div>
+              <nav class="nav-list" id="ops-manual-nav"><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-overview">1. Console Overview</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-map">2. Console Map</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-ledger">3. Ledger &amp; Pipeline</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-risk">4. Risk &amp; Account Control</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-authority">5. Authority Ops</a><a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#ops-section-incidents">6. Incidents &amp; Response</a></nav>
+            </div>
+          </aside>
+          <div class="content">
+            <section class="section-card" id="ops-section-overview">
+              <div class="section-kicker">1. Console Overview</div>
+              <h2 class="section-title">운영 콘솔의 역할</h2>
+              <div class="section-copy">Ops Console은 일반 사용자 경험과 분리된 운영 전용 레이어다. 거래/정산/리스크/권위 정책을 읽고 조정하는 것이 목적이다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>핵심 질문</h3><p>지금 어떤 거래가 진행 중인가? 어떤 계정이 위험한가? 어떤 GP가 어디서 왔고 어디로 갔는가? 권위 규칙은 어떤 기준으로 운영되고 있는가?</p></div>
+                <div class="stack-card"><h3>운영 원칙</h3><p>사용자용 제품과 같은 화면 안에 있더라도 역할은 명확히 분리된다. Ops Console은 해석/관리/차단/조정의 화면이다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="ops-section-map">
+              <div class="section-kicker">2. Console Map</div>
+              <h2 class="section-title">탭 구조</h2>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>탭</th><th>목적</th><th>핵심 질문</th></tr></thead>
+                  <tbody>
+                    <tr><td>대시보드</td><td>운영 상황 요약</td><td>오늘 어떤 거래와 리스크를 먼저 볼 것인가?</td></tr>
+                    <tr><td>원장</td><td>GP 흐름 조회</td><td>어떤 유저가 어떤 소스에서 GP를 벌고 어디에 썼는가?</td></tr>
+                    <tr><td>파이프라인</td><td>환전 3-step 시뮬레이션</td><td>requested → locked → deducted → settled 흐름이 어떻게 보이는가?</td></tr>
+                    <tr><td>리스크</td><td>리스크 큐와 계정 상세</td><td>어떤 계정을 모니터링/동결해야 하는가?</td></tr>
+                    <tr><td>권위 정책</td><td>Authority 운영 기준</td><td>EXP 단가, abuse rules, integration state를 어떻게 관리하는가?</td></tr>
+                    <tr><td>계정</td><td>GP 잔액과 상태</td><td>어떤 계정이 얼마나 보유했고 어떤 상태인가?</td></tr>
+                    <tr><td>인시던트</td><td>사건 대응 기록</td><td>어떤 문제를 어떤 순서로 처리했는가?</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="section-card" id="ops-section-ledger">
+              <div class="section-kicker">3. Ledger &amp; Pipeline</div>
+              <h2 class="section-title">원장과 환전 파이프라인</h2>
+              <div class="section-copy">GP 원장과 환전 상태 머신은 운영 콘솔의 첫 번째 축이다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>GP 원장 조회</h3><p>MCN GP, Arena GP, Exchange spend를 같은 관점에서 읽고, 소스별 내역과 환전 거래 이력을 함께 본다.</p></div>
+                <div class="stack-card"><h3>API 3-step 시뮬레이터</h3><p>requested → locked → deducted → settled 흐름을 상태 머신으로 설명하며, 네트워크 실패와 중복 요청, 정산 지연 같은 운영 시나리오도 다룬다.</p></div>
+              </div>
+              <div class="code-card">requested → locked → deducted → settled
+
+- requested: 사용자가 환전 요청을 보냄
+- locked: 가용 잔액을 잠금
+- deducted: 실제 차감 처리
+- settled: 외부 정산 완료</div>
+            </section>
+
+            <section class="section-card" id="ops-section-risk">
+              <div class="section-kicker">4. Risk &amp; Account Control</div>
+              <h2 class="section-title">리스크와 계정 제어</h2>
+              <div class="section-copy">위험 계정을 선별하고 상태를 조정하는 흐름이다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>리스크 큐</h3><p>유저별 점수, 레벨, 사유, 최근 업데이트를 한눈에 보고 우선순위를 정한다.</p></div>
+                <div class="stack-card"><h3>계정 상세 / 동결</h3><p>선택한 계정의 점수 이력, 리스크 레벨, 관리자 메모를 보고 동결/해제를 실행한다. 동결 시 모든 API 요청 차단이 핵심 메시지다.</p></div>
+                <div class="stack-card"><h3>계정 GP 보유 현황</h3><p>MCN GP, Arena GP, 합계, 환전 사용, 가용 잔액, 현재 상태를 같은 표에서 읽는다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="ops-section-authority">
+              <div class="section-kicker">5. Authority Ops</div>
+              <h2 class="section-title">권위 정책 운영</h2>
+              <div class="section-copy">Authority를 계산하는 화면이 아니라, 운영 기준을 조정하는 레이어다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>EXP 단가 조정</h3><p>MCN Additional Mission, Arena Win, Burn 등 소스별 기본 EXP를 조정한다.</p></div>
+                <div class="stack-card"><h3>Level Curve 조정</h3><p>Level 1~100 누적 곡선을 조정하고 반영 타이밍을 관리한다.</p></div>
+                <div class="stack-card"><h3>Indirect EXP Ratio / Manual Grant</h3><p>간접 EXP 비율과 상한을 조정하고, 운영자가 개별 유저에게 EXP를 수동 부여/차감할 수 있어야 한다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="ops-section-incidents">
+              <div class="section-kicker">6. Incidents &amp; Response</div>
+              <h2 class="section-title">인시던트 대응</h2>
+              <div class="section-copy">단순 로그가 아니라, 어떤 사건이 있었고 어떤 조치가 이어졌는지를 설명하는 메뉴얼이다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>대량 환전 시도 감지</h3><p>리스크 스코어 급등, 자동 보류, 관리자 동결 처리까지의 타임라인을 남긴다.</p></div>
+                <div class="stack-card"><h3>API 응답 지연</h3><p>SLA 초과와 파트너사 지연을 운영 관점에서 기록하고, 재발 방지 조치를 남긴다.</p></div>
+              </div>
+              <div class="code-card">운영 대응 원칙
+
+- 거래 이상 징후는 리스크 큐에서 선별
+- 계정 상태 조정은 메모/이력과 함께 기록
+- 권위 정책 변경은 감사 로그를 남김
+- 인시던트는 타임라인과 해결 상태를 함께 유지</div>
+            </section>
+          </div>
+        </div>
+        <div class="footer-note">PUNKER V1.86 Ops Console 기준 인터랙티브 메뉴얼</div>
+      </main>
+    </div>
+
+    <!-- ======================== -->
+    <!-- === ARENA VIEW (DRAFT)=== -->
+    <!-- ======================== -->
+    <div id="view-arena" class="view">
+      <div class="manual-depth-bar">
+        <div class="manual-depth-wrap">
+          <div class="manual-depth-tabs">
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;authority&#39;); return false;">권위 시스템 규칙집</a>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;mcn&#39;); return false;">MCN 마케팅 메뉴얼</a>
+            <a class="manual-depth-tab active-auth" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;arena&#39;); return false;" style="background:rgba(255,184,77,0.18);border-color:rgba(255,184,77,0.22);color:#ffb84d;">아레나 게임 메뉴얼</a>
+            <span class="manual-depth-tab is-disabled" aria-disabled="true">교환소 메뉴얼 <span class="manual-depth-badge">준비중</span></span>
+            <a class="manual-depth-tab" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#" onclick="showView(&#39;ops&#39;); return false;">운영 콘솔 메뉴얼</a>
+          </div>
+        </div>
+      </div>
+
+      <main class="manual-wrap">
+        <section class="hero" style="background:radial-gradient(circle at 0% 0%, rgba(255,184,77,0.18), transparent 36%),linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));">
+          <div class="hero-kicker" style="--kicker-color:#ffb84d;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffb84d;box-shadow:0 0 0 5px rgba(255,184,77,.12);margin-right:8px;"></span>임시 메뉴얼 (Draft)</div>
+          <h1 class="hero-title">PUNKER Arena 게임</h1>
+          <div class="hero-copy">이 페이지는 아레나 게임 허브에서 옮겨온 제품 개요와 역할 설명을 임시로 보관하는 Draft 문서입니다. 정식 메뉴얼이 작성되면 이 내용은 구조화된 형태로 대체됩니다.</div>
+          <div class="hero-meta">
+            <span class="chip">상태 Draft</span>
+            <span class="chip">게시일 2026.04.14</span>
+            <span class="chip">섹션 3개</span>
+          </div>
+        </section>
+
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-card">
+              <div class="nav-title">목차</div>
+              <nav class="nav-list">
+                <a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#arena-draft-overview">1. Unified Experience</a>
+                <a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#arena-draft-roles">2. 역할 구조</a>
+                <a class="nav-link" href="file:///C:/Users/Gino/OneDrive/%EB%AC%B8%EC%84%9C/%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%86%A1%20%EB%B0%9B%EC%9D%80%20%ED%8C%8C%EC%9D%BC/PUNKER%20-%20App%20Demo%20V1.88.html#arena-draft-squad">3. 카드형 스쿼드 기준선</a>
+              </nav>
+            </div>
+          </aside>
+          <div class="content">
+            <section class="section-card" id="arena-draft-overview">
+              <div class="section-kicker">1. Unified Experience</div>
+              <h2 class="section-title">Arena 제품 개요</h2>
+              <div class="section-copy">현재 구현은 battle demo를 유지하되, 실제 게임이 연결될 때는 adapter가 session snapshot을 공급하고 이 페이지는 역할 기반 product shell로 동작합니다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>제품 한 줄 정의</h3><p>실게임 세션, 서포터 개입, Authority 성장, 정산 정책을 하나의 연결된 Arena 경험으로 정리하는 제품 shell.</p></div>
+                <div class="stack-card"><h3>핵심 루프</h3><p>NFT 홀더 자격 확인 → 덱/스쿼드 준비 → 실시간 배틀 → 서포터 개입 → 정산 → Authority 반영</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="arena-draft-roles">
+              <div class="section-kicker">2. 역할 구조</div>
+              <h2 class="section-title">Player · Supporter · Operator</h2>
+              <div class="section-copy">Arena는 세 가지 역할이 같은 세션 안에서 상호작용하는 구조입니다.</div>
+              <div class="stack">
+                <div class="stack-card"><h3>Player / Influencer</h3><p>NFT 홀더인지, 아바타 인증이 유효한지, 현재 덱/스쿼드와 장비가 실제 게임 세션에 반영될 수 있는지 확인합니다.</p></div>
+                <div class="stack-card"><h3>Supporter / Spectator</h3><p>서포터 아이템은 단순 구매가 아니라 live match에 이벤트를 쏘는 액션이어야 합니다. 현재 데모는 fallback이고, 실연동 시에는 event contract를 통해 반영됩니다.</p></div>
+                <div class="stack-card"><h3>Operator / Policy</h3><p>정산 비율, Authority 적립 규칙, 외부 Punkvism 연동 상태는 제품 UI 안에서 읽히되 실제 결정권은 Ops 레이어가 가져갑니다.</p></div>
+              </div>
+            </section>
+
+            <section class="section-card" id="arena-draft-squad">
+              <div class="section-kicker">3. 카드형 스쿼드 기준선</div>
+              <h2 class="section-title">카드형 스쿼드 배틀 구조</h2>
+              <div class="section-copy">Arena는 순수 CCG보다 카드형 스쿼드 배틀에 가깝습니다. 로스터 카드, 배치된 유닛, 무기, 서포트 이벤트를 각각 독립 상태로 보여주되 같은 세션 규칙으로 묶어야 합니다.</div>
+            </section>
+          </div>
+        </div>
+        <div class="footer-note">PUNKER Arena 게임 Draft 메뉴얼 — 정식 버전 작성 전 임시 보관용</div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    /* ===================== */
+    /* === View Routing  === */
+    /* ===================== */
+    const BREADCRUMBS = {
+      library: 'Punker <span class="sep">/</span> 메뉴얼',
+      authority: 'Punker <span class="sep">/</span> 메뉴얼 <span class="sep">/</span> 권위 시스템 규칙집',
+      mcn: 'Punker <span class="sep">/</span> 메뉴얼 <span class="sep">/</span> MCN 마케팅 메뉴얼',
+      arena: 'Punker <span class="sep">/</span> 메뉴얼 <span class="sep">/</span> 아레나 게임 메뉴얼',
+      ops: 'Punker <span class="sep">/</span> 메뉴얼 <span class="sep">/</span> 운영 콘솔 메뉴얼'
+    };
+
+    /* Detect iframe embedding and hide outer chrome */
+    if (window.parent !== window) {
+      document.documentElement.setAttribute('data-embedded', '');
+    }
+
+    var INITIAL_VIEW = 'library';
+    let currentView = 'library';
+
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active-view'); });
+      var el = document.getElementById('view-' + viewId);
+      if (el) el.classList.add('active-view');
+      document.getElementById('breadcrumb-bar').innerHTML = BREADCRUMBS[viewId] || BREADCRUMBS.library;
+      currentView = viewId;
+      window.scrollTo(0, 0);
+      if (viewId === 'authority') initAuthority();
+      if (window.parent !== window && window.parent.Shell) {
+        try {
+          if (viewId === 'library') window.parent.Shell.openManualLibrary();
+          else window.parent.Shell.openManualPage(viewId);
+        } catch(e) {}
+      }
+    }
+
+    function goHome() {
+      if (window.parent !== window && window.parent.Shell) {
+        try { window.parent.Shell.goHome(); return; } catch(e) {}
+      }
+      window.location.href = 'PUNKER - App Demo V1.86.html';
+    }
+
+    function openDemoApp(app) {
+      if (window.parent !== window && window.parent.Shell) {
+        try { window.parent.Shell.switchApp(app); return; } catch(e) {}
+      }
+      window.location.href = 'PUNKER - App Demo V1.86.html#' + app;
+    }
+
+    /* ===================== */
+    /* === Library View  === */
+    /* ===================== */
+    var MANUALS = [
+      {
+        id: 'authority', status: 'published', type: '시스템 메뉴얼', domain: 'Authority',
+        title: 'PUNKVISM Authority Gauge System',
+        summary: 'Level 1~100, Tier 1~5, 17개 EXP Source, 외부 연동, 운영 요구사항, 어뷰징 방지를 한 번에 읽을 수 있는 규칙집입니다.',
+        updated: '2026.04.13',
+        sections: ['1. System Overview', 'Tier Structure & Title', 'EXP Priority Hierarchy (가중치 우선순위)', '2. EXP Sources (경험치 획득 항목 상세)', '3. External Integration Map (외부 연동 현황)', '4. Admin Requirements (관리자 기능 요구사항)', '5. Anti-Abuse Safeguards (어뷰징 방지)'],
+        view: 'authority'
+      },
+      {
+        id: 'mcn', status: 'published', type: '제품 메뉴얼', domain: 'MCN',
+        title: 'MCN 마케팅 메뉴얼',
+        summary: '지갑 연결, 권한 분기, 프로젝트별 미션, 제출/검수, 보상 원장, Tier와 운영 기능을 정리한 제품 메뉴얼입니다.',
+        updated: '2026.04.14',
+        sections: ['Product Overview', 'Access & Role Model', 'Project & Mission Flow', 'Submission & Review', 'Rewards, Milestone & Tier'],
+        view: 'mcn'
+      },
+      {
+        id: 'arena', status: 'published', type: '제품 메뉴얼', domain: 'Arena',
+        title: 'Arena 게임 메뉴얼',
+        summary: '제품 개요, 역할 구조(Player/Supporter/Operator), 카드형 스쿼드 기준선을 임시로 정리한 Draft 문서입니다.',
+        updated: '2026.04.14',
+        sections: ['Unified Experience', '역할 구조', '카드형 스쿼드 기준선'],
+        view: 'arena'
+      },
+      {
+        id: 'exchange', status: 'planned', type: '제품 메뉴얼', domain: 'Exchange',
+        title: 'Exchange 메뉴얼',
+        summary: 'NFT Purchase, PVT Staking, Burn 입력과 Authority 연결을 정리할 예정입니다.',
+        updated: '준비중',
+        sections: ['구매 흐름', '스테이킹 밴드', 'Burn 입력', '앱 간 연결'],
+        view: ''
+      },
+      {
+        id: 'ops', status: 'published', type: '운영 메뉴얼', domain: 'Ops',
+        title: 'Ops Console 메뉴얼',
+        summary: '대시보드, GP 원장, 환전 파이프라인, 리스크 큐, 계정 제어, Authority 운영, 인시던트 대응을 정리한 운영 메뉴얼입니다.',
+        updated: '2026.04.14',
+        sections: ['Console Overview', 'Ledger & Pipeline', 'Risk & Account Control', 'Authority Ops', 'Incidents & Response'],
+        view: 'ops'
+      }
+    ];
+
+    var LIB_FILTERS = [
+      { id: 'all', label: '전체' },
+      { id: 'published', label: '발행됨' },
+      { id: 'planned', label: '준비중' },
+      { id: 'system', label: '시스템' },
+      { id: 'product', label: '제품' },
+      { id: 'ops', label: '운영' }
+    ];
+
+    var libState = { query: '', filter: 'all' };
+
+    function libMatchesFilter(item) {
+      if (libState.filter === 'all') return true;
+      if (libState.filter === 'published' || libState.filter === 'planned') return item.status === libState.filter;
+      if (libState.filter === 'system') return item.type === '시스템 메뉴얼';
+      if (libState.filter === 'product') return item.type === '제품 메뉴얼';
+      if (libState.filter === 'ops') return item.type === '운영 메뉴얼';
+      return true;
+    }
+
+    function libMatchesQuery(item) {
+      var haystack = [item.title, item.summary, item.domain, item.type].concat(item.sections).join(' ').toLowerCase();
+      return haystack.includes(libState.query.toLowerCase());
+    }
+
+    function renderLibFilters() {
+      document.getElementById('manual-filters').innerHTML = LIB_FILTERS.map(function(f) {
+        return '<button class="lib-chip ' + (libState.filter === f.id ? 'active' : '') + '" onclick="setLibFilter(\'' + f.id + '\')">' + f.label + '</button>';
+      }).join('');
+    }
+
+    function renderLibManuals() {
+      var mount = document.getElementById('manual-grid');
+      var items = MANUALS.filter(function(item) { return libMatchesFilter(item) && libMatchesQuery(item); });
+      if (!items.length) {
+        mount.innerHTML = '<div class="manual-empty">조건에 맞는 매뉴얼이 없습니다.</div>';
+        return;
+      }
+      mount.innerHTML = items.map(function(item) {
+        return '<article class="manual-card">' +
+          '<div class="manual-top"><div>' +
+          '<div class="manual-type">' + item.type + ' · ' + item.domain + '</div>' +
+          '<div class="manual-title">' + item.title + '</div>' +
+          '</div><span class="status ' + (item.status === 'published' ? 'live' : 'planned') + '">' + (item.status === 'published' ? '발행됨' : '준비중') + '</span></div>' +
+          '<div class="manual-summary">' + item.summary + '</div>' +
+          '<div class="meta-row"><span class="pill">게시일 ' + item.updated + '</span><span class="pill">섹션 ' + item.sections.length + '개</span></div>' +
+          '<ul class="manual-sections">' + item.sections.slice(0, 4).map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+          '<div class="manual-actions">' +
+          (item.view
+            ? '<button class="btn primary" onclick="showView(\'' + item.view + '\')">메뉴얼 열기</button>'
+            : '<button class="btn ghost" type="button" disabled>준비중</button>') +
+          '</div></article>';
+      }).join('');
+    }
+
+    function setLibFilter(filter) {
+      libState.filter = filter;
+      renderLibFilters();
+      renderLibManuals();
+    }
+
+    document.getElementById('manual-search').addEventListener('input', function(e) {
+      libState.query = e.target.value || '';
+      renderLibManuals();
+    });
+
+    renderLibFilters();
+    renderLibManuals();
+
+    /* ======================= */
+    /* === Authority View  === */
+    /* ======================= */
+    var authInitialized = false;
+
+    var AUTH_NAV = [
+      { id: 'auth-section-overview', label: '1. System Overview' },
+      { id: 'auth-section-sources', label: '2. EXP Sources' },
+      { id: 'auth-section-integrations', label: '3. External Integration Map' },
+      { id: 'auth-section-admin', label: '4. Admin Requirements' },
+      { id: 'auth-section-safeguards', label: '5. Anti-Abuse Safeguards' }
+    ];
+
+    var AUTH_OVERVIEW = [
+      'PUNKVISM Authority Gauge(권위 게이지)는 PUNKER 안에서 유저의 전체 기여도를 하나의 레벨 시스템으로 보여준다.',
+      '유저는 Level 1~100까지 성장하고, 구간에 따라 5개의 Tier(칭호)를 받는다.',
+      'MCN 마케팅 플랫폼, 아레나 게임, 통합 교환소 등에서 생긴 행동 데이터를 모아 하나의 EXP 점수로 계산한다.'
+    ];
+
+    var AUTH_TIERS = [
+      ['Tier 1', 'Lv. 1 ~ 19', 'Wanderer (방랑자)', '생태계에 막 발을 들인 존재. 아직 어디에도 속하지 않은 떠돌이.'],
+      ['Tier 2', 'Lv. 20 ~ 39', 'Punk (펑크)', 'NFT를 사고 미션을 수행하며 처음으로 저항의 깃발 아래 이름을 올린 자.'],
+      ['Tier 3', 'Lv. 40 ~ 59', 'Résistance (레지스탕스)', '조직적으로 저항에 합류한 자. 생태계 안에서 영향력을 키우기 시작.'],
+      ['Tier 4', 'Lv. 60 ~ 79', 'Vanguard (뱅가드)', '전장의 선봉에 서는 자. 아레나, MCN, 시장에서 생태계를 확장하는 핵심 전력.'],
+      ['Tier 5', 'Lv. 80 ~ 100', 'Cypherpunk (사이퍼펑크)', '사토시 나카모토의 정신을 잇는 최종 칭호. 펑크비즘 가상 국가의 주권자.']
+    ];
+
+    var AUTH_PRIORITY = [
+      ['1st (Highest)', 'NFT Purchase', 'RWA NFT, Citizenship NFT, Founder\'s License Pack — 생태계 최대 이해관계자이므로 최고 가중치'],
+      ['2nd', 'Staking & Lock-up', 'NFT Staking, PVT Staking — 장기 충성도 및 유통량 축소 기여'],
+      ['3rd', 'Game Activity', 'Arena Battle, Arena Win, Arena Support — 매출 직결 행동'],
+      ['4th', 'Ecosystem Expansion', 'MCN Mission, Referral, Governance Vote — 신규 유입 및 커뮤니티 건강성'],
+      ['5th (Lowest)', 'Auxiliary Actions', 'Tori/Weapon/Oculla Enhance/Evolve, Misc NFT, PVT Burn — 보조 활동']
+    ];
+
+    var AUTH_SOURCES = [
+      {
+        section: '2-1. Priority 1: NFT Purchase (NFT 구매)',
+        items: [
+          { title: 'EXP-01 RWA NFT Purchase (RWA NFT 구매)', fields: [
+            { label: 'Trigger', text: 'RWA NFT 구매 완료 시 (on-chain 확인)' },
+            { label: 'EXP Logic', text: '1개당 고정 EXP 부여. 구매 수량에 비례하여 누적.' },
+            { label: 'Data Source', text: 'BSC → 지갑 스캔 RWA NFT 컨트랙트 주소 대조' },
+            { label: 'Note', text: '구매 시점의 온체인 트랜잭션을 기준으로 하며, 재판매(2차 마켓) 구매도 인정.' }
+          ]},
+          { title: 'EXP-02 Founder\'s License Pack (RWA 파운더스 라이선스 박스)', fields: [
+            { label: 'Trigger', text: '파운더스 팩 구매 완료 시' },
+            { label: 'EXP Logic', text: '팩 등급별 차등 EXP: Silver Pack(30개) < Gold Pack(50개) < Diamond Pack(200개). 단순 개별 구매 대비 볼륨 보너스 EXP 추가 부여.' },
+            { label: 'Data Source', text: 'Pack 구매 트랜잭션 (on-chain) 또는 발행 시스템 DB' },
+            { label: 'Reference', list: ['Silver Pack = NFT 30개', 'Gold Pack = NFT 50개', 'Diamond Pack = NFT 200개'] }
+          ]},
+          { title: 'EXP-03 Citizenship NFT Holdings (시민권 NFT 보유량)', fields: [
+            { label: 'Trigger', text: '지갑 스캔 시 시민권 NFT 보유 확인' },
+            { label: 'EXP Logic', text: '컬렉션별 희귀도에 따른 차등 EXP. 총 발행량이 적을수록 높은 단위 EXP.' },
+            { label: 'Citizenship NFT Collection Reference', table: {
+              headers: ['Collection', 'Total Supply', 'Rarity Tier', 'EXP Weight'],
+              rows: [['Genesis','99','Ultra Rare','Highest'],['Punkykongz','5,000','Rare','Very High'],['Punky HA_G','7,777','Uncommon','High'],['Wise Alya','6,000','Uncommon','High'],['Pitree','5,000','Rare','Very High'],['GOAT PUNK','10,000','Common','Standard']]
+            }}
+          ]},
+          { title: 'EXP-04 Tori & Weapon & Oculla Purchase (토리/무기/오쿨라 구매)', fields: [
+            { label: 'Trigger', text: '아레나 관련 NFT 구매 완료 시 (on-chain)' },
+            { label: 'EXP Logic', text: '구매 건당 고정 EXP. 구매 수량에 비례하여 누적.' },
+            { label: 'Data Source', text: '아레나 게임 NFT 컨트랙트 스캔' }
+          ]},
+          { title: 'EXP-05 Misc NFT Purchase (기타 NFT 구매)', fields: [
+            { label: 'Trigger', text: '컨텐츠 NFT 구매 시 (Lost Tesla Art Car NFT, Lalira NFT 등)' },
+            { label: 'EXP Logic', text: '구매량에 따른 가중치 적용. 관리자가 NFT별 EXP 단가 설정 가능.' },
+            { label: 'Data Source', text: '해당 NFT 컨트랙트 주소 등록 후 지갑 스캔' }
+          ]}
+        ]
+      },
+      {
+        section: '2-2. Priority 2: Staking & Lock-up (스테이킹 및 락업)',
+        items: [
+          { title: 'EXP-06 Citizenship NFT Staking (시민권 NFT 스테이킹)', fields: [
+            { label: 'Trigger', text: '스테이킹 계약 체결 시 + 만기 완료 시' },
+            { label: 'EXP Logic', text: '기간별 차등 EXP: 1개월 < 6개월 < 1년. 스테이킹 시작 시 기본 EXP 부여, 만기 완료 시 보너스 EXP 추가.' },
+            { label: 'Duration', list: ['1개월', '6개월', '1년'] },
+            { label: 'Integration ⚠️', list: ['PUNKVISM 홈페이지 스테이킹 시스템과 API 연동 필수.', '스테이킹 계약/해지/만기 이벤트를 Webhook 또는 Polling 방식으로 수신해야 함.', 'PUNKVISM 측에 연동 방식 협의 필요.'] }
+          ]},
+          { title: 'EXP-07 RWA NFT Staking (RWA NFT 스테이킹)', fields: [
+            { label: 'Trigger', text: '스테이킹 계약 체결 시 + 만기 완료 시' },
+            { label: 'EXP Logic', text: 'EXP-06과 동일한 기간별 차등 구조. RWA NFT 특성상 별도 가중치 적용 가능.' },
+            { label: 'Duration', list: ['1개월', '6개월', '1년'] },
+            { label: 'Integration ⚠️', list: ['EXP-06과 동일.', 'PUNKVISM 홈페이지 스테이킹 시스템 API 연동 필수.'] }
+          ]},
+          { title: 'EXP-08 PVT Coin Staking (PVT 코인 스테이킹)', fields: [
+            { label: 'Trigger', text: 'PVT 스테이킹 계약 체결 시 + 만기 완료 시' },
+            { label: 'EXP Logic', text: '락업 수량 × 기간 계수로 산출. 기간별 차등: 3개월 < 6개월 < 1년 < 2년.' },
+            { label: 'Duration', list: ['3개월', '6개월', '1년', '2년'] },
+            { label: 'Integration ⚠️', list: ['PVT 스테이킹 컨트랙트 또는 PUNKVISM 홈페이지 스테이킹 시스템과 API 연동 필수.'] }
+          ]}
+        ]
+      },
+      {
+        section: '2-3. Priority 3: Game Activity (게임 활동)',
+        items: [
+          { title: 'EXP-09 Arena Battle Play (아레나 게임 진행)', fields: [
+            { label: 'Trigger', text: '아레나 배틀 1판 완료 시' },
+            { label: 'EXP Logic', text: '판당 고정 EXP. 일일 획득 상한 설정 권장 (어뷰징 방지).' },
+            { label: 'Data Source', text: '아레나 게임 서버 DB' }
+          ]},
+          { title: 'EXP-10 Arena Battle Win (아레나 게임 승리)', fields: [
+            { label: 'Trigger', text: '아레나 배틀 승리 시' },
+            { label: 'EXP Logic', text: 'EXP-09 기본 EXP + 승리 보너스 EXP 추가.' }
+          ]},
+          { title: 'EXP-11 Arena Support (아레나 후원)', fields: [
+            { label: 'Trigger', text: '아레나 배틀 중 서포터 아이템 구매 시' },
+            { label: 'EXP Logic', text: '구매 수량 및 금액에 따른 가중치 적용. 금액 구간별 EXP 단가 설정.' },
+            { label: 'Data Source', text: '아레나 게임 서버 DB → 서포터 결제 원장' }
+          ]}
+        ]
+      },
+      {
+        section: '2-4. Priority 4: Ecosystem Expansion (생태계 확장)',
+        items: [
+          { title: 'EXP-12 MCN Additional Mission (MCN 추가 미션)', fields: [
+            { label: 'Trigger', text: 'PUNKVISM 설정 추가 마케팅 미션 성공 (초록불) 시' },
+            { label: 'EXP Logic', text: '미션 성공 1건당 고정 EXP. AI 검수 시스템(신호등) 통과 필수.' },
+            { label: 'Data Source', text: 'PUNKER MCN 플랫폼 미션 제출 / 검수 DB' }
+          ]},
+          { title: 'EXP-13 Referral (레퍼럴)', fields: [
+            { label: 'Trigger', text: '추천 코드로 신규 유저 가입 완료 시' },
+            { label: 'EXP Logic (2점층)', list: ['Direct EXP: 신규 유저 가입 시 추천인에게 고정 EXP 부여.', 'Indirect EXP: 피추천인이 EXP 획득 활동 수행 시, 추천인에게 소량의 간접 EXP 발생 (e.g. 피추천인 EXP의 X%).', 'Indirect EXP ※ 는 상한선 설정 권장 (무한 차수 방지).'] },
+            { label: 'Data Source', text: 'PUNKER 플랫폼 레퍼럴 코드 시스템 (신규 개발 필요)' }
+          ]},
+          { title: 'EXP-14 Governance Vote (거버넌스 투표)', fields: [
+            { label: 'Trigger', text: '거버넌스 투표 참여 완료 시' },
+            { label: 'EXP Logic', text: '투표 1회 참여당 고정 EXP. 월간 획득 상한 설정 권장.' },
+            { label: 'Integration ⚠️', list: ['거버넌스 투표는 PUNKVISM 공식 홈페이지에서 운영.', 'PUNKER에서는 홈페이지 투표 참여 데이터를 API(Webhook/Polling)로 연동하여 EXP를 산출.', '시민권 NFT 보유자만 투표 가능 등의 조건 설계는 PUNKVISM 측과 협의 필요.'] }
+          ]}
+        ]
+      },
+      {
+        section: '2-5. Priority 5: Auxiliary Actions (보조 활동)',
+        items: [
+          { title: 'EXP-15 Tori/Weapon/Oculla Enhance (강화)', fields: [
+            { label: 'Trigger', text: '강화 시도 시 (성공/실패 무관하게 EXP 부여 또는 성공 시만 부여 협의 필요)' },
+            { label: 'EXP Logic', text: '강화 1회당 고정 EXP.' }
+          ]},
+          { title: 'EXP-16 Tori/Weapon/Oculla Evolve (진화)', fields: [
+            { label: 'Trigger', text: '진화 성공 시' },
+            { label: 'EXP Logic', text: '진화 1회당 EXP. 강화보다 높은 단위 EXP 부여 (진화는 더 희귀한 행동).' }
+          ]},
+          { title: 'EXP-17 PVT Coin Burn for EXP (PVT → 소각 경험치 교환)', fields: [
+            { label: 'Trigger', text: '유저가 자발적으로 PVT 소각 신청 시' },
+            { label: 'EXP Logic', text: '소각 수량에 비례하여 EXP 부여. 관리자가 교환 비율(PVT per EXP) 설정 가능.' },
+            { label: 'Integration ⚠️', list: ['PVT 소각 컨트랙트 또는 PUNKVISM 홈페이지 Burn 기능과 연동 필수.'] }
+          ]}
+        ]
+      }
+    ];
+
+    var AUTH_INTEGRATIONS = [
+      ['BSC Blockchain', 'NFT 보유, 구매 트랜잭션', 'On-chain Scan', '현재 연동 중'],
+      ['PUNKVISM Homepage', 'NFT Staking 상태 / 기간', 'Webhook / API', '아직 미연동'],
+      ['PUNKVISM Homepage', 'PVT Staking 상태 / 수량', 'Webhook / API', '아직 미연동'],
+      ['PUNKVISM Homepage', 'PVT Burn 기록', 'Webhook / API', '아직 미연동'],
+      ['Arena Game Server', '배틀 / 승리 / 후원 데이터', 'Internal API', '현재 연동 중'],
+      ['PUNKER MCN Platform', '미션 성공 건수', 'Internal DB', '현재 연동 중'],
+      ['Referral System', '추천 코드, 피추천인 활동', 'Internal DB', '연동 설계 전'],
+      ['PUNKVISM Homepage', '거버넌스 투표 참여 기록', 'Webhook / API', '아직 미연동']
+    ];
+
+    var AUTH_ADMIN = [
+      { title: '4-1. EXP 단가 설정 패널', body: '각 EXP 항목별로 관리자가 직접 EXP 단가(획득량)를 설정/변경할 수 있어야 한다. 변경 시 기존 유저의 레벨은 변동되지 않으며, 변경 이후 신규 획득분부터 적용된다.', list: [] },
+      { title: '4-2. 레벨 구간별 필요 EXP 커브 (성장 곡선)', body: '각 레벨 승급에 필요한 누적 EXP를 관리자가 설정할 수 있어야 한다. 선형 성장 또는 지수 성장 곡선 중 선택 가능하도록 설계 권장.', list: ['예시:', 'Lv.1→2 = 100 EXP', 'Lv.99→100 = 50,000 EXP', '후반으로 갈수록 급격히 상승하는 구조 권장.'] },
+      { title: '4-3. 유저 검색 및 조회', body: '지갑 주소로 검색하여 해당 유저의 현재 Level, Tier, 항목별 EXP 내역, 총 누적 EXP를 조회할 수 있어야 한다.', list: [] },
+      { title: '4-4. 수동 EXP 부여/차감', body: '특수 이벤트, 어뷰징 제재 등의 상황에서 관리자가 직접 EXP를 부여하거나 차감할 수 있어야 한다. 모든 수동 조정은 로그에 기록된다.', list: [] },
+      { title: '4-5. 레퍼럴 간접 EXP 비율 설정', body: '피추천인 활동 시 추천인에게 발생하는 간접 EXP 비율(예: 피추천인 EXP의 5%)을 관리자가 설정/변경할 수 있어야 한다.', list: [] }
+    ];
+
+    var AUTH_SAFEGUARDS = [
+      { title: '5-1. 일일 획득 상한 (Daily Cap)', body: '아레나 게임 진행, PVT 소각 등 무한 반복 가능한 항목에 대해 일일 최대 획득 가능 EXP를 제한한다. 관리자가 항목별로 Daily Cap을 설정할 수 있어야 한다.' },
+      { title: '5-2. 레퍼럴 간접 EXP 상한', body: '한 명의 추천인이 피추천인으로부터 받을 수 있는 간접 EXP의 총량 상한을 설정한다. 또한 피추천인 1인당 발생시키는 간접 EXP에도 상한을 둘 수 있어야 한다.' },
+      { title: '5-3. 중복 행동 감지', body: '동일 트랜잭션 해시로 이미 EXP가 부여된 행동을 중복 처리하지 않도록 한다.' },
+      { title: '5-4. 스테이킹 조기 해지 페널티', body: '스테이킹 시작 시 부여된 기본 EXP는 유지하되, 만기 전 해지 시 보너스 EXP는 부여하지 않는다.' }
+    ];
+
+    var AUTH_OPEN_ITEMS = [
+      ['1', 'EXP 구체적 수치', '각 EXP 항목의 구체적인 EXP 단가 숫자는 미확정. 개발팀에서 밸런싱 시뮬레이션을 통해 적정 수치를 제안해주시기 바랍니다.'],
+      ['2', '레벨별 필요 누적 EXP 곡선', 'Lv.1→100까지의 성장 곡선 (선형 vs 지수) 설계안을 제안해주시기 바랍니다.'],
+      ['3', 'PUNKVISM 홈페이지 연동 방식', 'NFT/PVT 스테이킹 및 PVT 소각 데이터 연동을 위한 Webhook vs Polling vs On-chain 직접 스캔 중 최적의 방식을 제안해주시기 바랍니다.'],
+      ['4', '강화 EXP 부여 조건', '토리/무기/오쿨라 강화 시 EXP 부여 조건: 성공 시만 vs 시도 시 모두 게임 기획 관점에서 제안 요청.'],
+      ['5', '거버넌스 투표 연동 설계', '거버넌스 투표는 PUNKVISM 공식 홈페이지에서 운영. PUNKER와의 API 연동 방식(Webhook/Polling) 및 투표 참여 조건(시민권 NFT 보유자 전체 vs Tier 제한 vs 보유량별 투표권) 설계 협의 필요.'],
+      ['6', '레퍼럴 코드 시스템 설계', '추천 코드 생성/관리/추적 방식 및 간접 EXP 연동 구조에 대한 기술 설계안 제안 요청.']
+    ];
+
+    var AUTH_SRC_FILTERS = [
+      { id: 'all', label: '전체' },
+      { id: 'Priority 1', label: 'Priority 1' },
+      { id: 'Priority 2', label: 'Priority 2' },
+      { id: 'Priority 3', label: 'Priority 3' },
+      { id: 'Priority 4', label: 'Priority 4' },
+      { id: 'Priority 5', label: 'Priority 5' }
+    ];
+
+    var authState = { tierIndex: 0, sourceFilter: 'all', query: '' };
+
+    var H = function(v) {
+      return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    };
+
+    function initAuthority() {
+      if (authInitialized) return;
+      authInitialized = true;
+
+      /* Nav */
+      document.getElementById('auth-manual-nav').innerHTML = AUTH_NAV.map(function(item) {
+        return '<a class="nav-link" href="#' + item.id + '">' + item.label + '<small>\u2193</small></a>';
+      }).join('');
+
+      /* Overview */
+      document.getElementById('auth-overview-copy').innerHTML = AUTH_OVERVIEW.map(function(t) { return '<p>' + H(t) + '</p>'; }).join('');
+      document.getElementById('auth-priority-table').innerHTML = AUTH_PRIORITY.map(function(r) {
+        return '<tr>' + r.map(function(c) { return '<td>' + H(c) + '</td>'; }).join('') + '</tr>';
+      }).join('');
+
+      renderAuthTierRail();
+      renderAuthSourceFilters();
+      renderAuthSources();
+      renderAuthIntegrations();
+      renderAuthStack(AUTH_ADMIN, 'auth-admin-stack');
+      renderAuthStack(AUTH_SAFEGUARDS, 'auth-safeguard-stack');
+      renderAuthOpenItems();
+
+      /* Open items toggle */
+      document.getElementById('open-items-toggle').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleAuthOpenItems();
+      });
+
+      /* Source search */
+      document.getElementById('auth-source-search').addEventListener('input', function(e) {
+        authState.query = e.target.value || '';
+        renderAuthSources();
+      });
+
+      /* Section observer */
+      var links = Array.from(document.querySelectorAll('#auth-manual-nav .nav-link'));
+      var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          var link = links.find(function(l) { return l.getAttribute('href') === '#' + entry.target.id; });
+          if (!link) return;
+          if (entry.isIntersecting) {
+            links.forEach(function(n) { n.classList.remove('active'); });
+            link.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-30% 0px -55% 0px', threshold: 0 });
+      AUTH_NAV.forEach(function(item) {
+        var section = document.getElementById(item.id);
+        if (section) obs.observe(section);
+      });
+    }
+
+    function renderAuthTierRail() {
+      var rail = document.getElementById('auth-tier-rail');
+      rail.innerHTML = AUTH_TIERS.map(function(row, i) {
+        return '<button class="tier-node ' + (authState.tierIndex === i ? 'active' : '') + '" onclick="selectAuthTier(' + i + ')">' +
+          '<div class="tier-node-label">' + H(row[0]) + '</div>' +
+          '<div class="tier-node-title">' + H(row[2].split(' (')[0]) + '</div>' +
+          '<div class="tier-node-range">' + H(row[1]) + '</div></button>';
+      }).join('');
+      var sel = AUTH_TIERS[authState.tierIndex];
+      document.getElementById('auth-tier-panel-title').textContent = sel[0] + ' · ' + sel[2];
+      document.getElementById('auth-tier-panel-copy').textContent = sel[3];
+      document.getElementById('auth-tier-panel-grid').innerHTML =
+        '<div class="panel-item"><strong>레벨 구간</strong><div>' + H(sel[1]) + '</div></div>' +
+        '<div class="panel-item"><strong>영문 칭호</strong><div>' + H(sel[2].split(' (')[0]) + '</div></div>' +
+        '<div class="panel-item"><strong>한글 칭호</strong><div>' + H((sel[2].match(/\((.*?)\)/) || ['',''])[1] || '-') + '</div></div>' +
+        '<div class="panel-item"><strong>읽는 방법</strong><div>이 티어는 Rulebook의 칭호와 설명을 그대로 보여준다.</div></div>';
+    }
+
+    function selectAuthTier(i) { authState.tierIndex = i; renderAuthTierRail(); }
+
+    function renderAuthField(field) {
+      if (field.text) return '<div class="field"><strong>' + H(field.label) + '</strong><p>' + H(field.text) + '</p></div>';
+      if (field.list) return '<div class="field"><strong>' + H(field.label) + '</strong><ul>' + field.list.map(function(x) { return '<li>' + H(x) + '</li>'; }).join('') + '</ul></div>';
+      if (field.table) return '<div class="field"><strong>' + H(field.label) + '</strong><div class="table-wrap"><table><thead><tr>' +
+        field.table.headers.map(function(h) { return '<th>' + H(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        field.table.rows.map(function(r) { return '<tr>' + r.map(function(c) { return '<td>' + H(c) + '</td>'; }).join('') + '</tr>'; }).join('') +
+        '</tbody></table></div></div>';
+      return '';
+    }
+
+    function renderAuthSourceFilters() {
+      document.getElementById('auth-source-filters').innerHTML = AUTH_SRC_FILTERS.map(function(f) {
+        return '<button class="filter-chip ' + (authState.sourceFilter === f.id ? 'active' : '') + '" onclick="setAuthSourceFilter(\'' + f.id + '\')">' + f.label + '</button>';
+      }).join('');
+    }
+
+    function setAuthSourceFilter(f) { authState.sourceFilter = f; renderAuthSourceFilters(); renderAuthSources(); }
+
+    function renderAuthSources() {
+      var mount = document.getElementById('auth-source-groups');
+      var groups = AUTH_SOURCES
+        .filter(function(g) { return authState.sourceFilter === 'all' || g.section.includes(authState.sourceFilter); })
+        .map(function(g) {
+          return { section: g.section, items: g.items.filter(function(item) {
+            if (!authState.query) return true;
+            var text = [item.title].concat(item.fields.map(function(f) { return f.label + ' ' + (f.text || '') + ' ' + (f.list || []).join(' '); })).join(' ').toLowerCase();
+            return text.includes(authState.query.toLowerCase());
+          })};
+        })
+        .filter(function(g) { return g.items.length; });
+
+      if (!groups.length) {
+        mount.innerHTML = '<div style="padding:18px;color:var(--muted)">검색 결과 없음</div>';
+        return;
+      }
+
+      mount.innerHTML = groups.map(function(group) {
+        var gid = group.section.slice(0, 3).replace(/[^0-9]/g, '') || 'x';
+        return '<section class="source-group">' +
+          '<div class="source-group-head"><div class="source-group-title">' + H(group.section) + '</div>' +
+          '<button type="button" class="source-group-toggle" data-source-toggle="auth-shell-' + gid + '" onclick="toggleAuthExpand(\'auth-shell-' + gid + '\')">전체 보기</button></div>' +
+          '<div class="source-group-shell" id="auth-shell-' + gid + '">' +
+          '<aside class="source-group-nav"><div class="nav-title">바로가기</div>' +
+          '<div class="source-group-nav-copy">이 그룹 안의 EXP 항목을 왼쪽에서 고르고, 오른쪽에서 스크롤로 이어서 읽습니다.</div>' +
+          '<div class="source-group-nav-list">' +
+          group.items.map(function(item, idx) {
+            var aid = 'auth-src-' + gid + '-' + idx;
+            return '<button type="button" class="source-group-nav-btn ' + (idx === 0 ? 'active' : '') + '" data-source-target="' + aid + '" onclick="scrollAuthSource(\'auth-scroll-' + gid + '\',\'' + aid + '\')">' + H(item.title.split(' (')[0]) + '</button>';
+          }).join('') +
+          '</div></aside>' +
+          '<div class="source-group-scroll" id="auth-scroll-' + gid + '">' +
+          group.items.map(function(item, idx) {
+            var aid = 'auth-src-' + gid + '-' + idx;
+            return '<article class="source-item-panel ' + (idx === 0 ? 'is-active' : '') + '" data-source-anchor="' + aid + '">' +
+              '<div class="source-title">' + H(item.title) + '</div>' +
+              '<div class="source-body">' + item.fields.map(renderAuthField).join('') + '</div></article>';
+          }).join('') +
+          '</div></div></section>';
+      }).join('');
+
+      bindAuthSourceShells();
+    }
+
+    function toggleAuthExpand(id) {
+      var shell = document.getElementById(id);
+      if (!shell) return;
+      var btn = document.querySelector('[data-source-toggle="' + id + '"]');
+      var expanded = shell.classList.toggle('is-expanded');
+      if (btn) btn.textContent = expanded ? '기본 보기' : '전체 보기';
+    }
+
+    function scrollAuthSource(scrollId, anchorId) {
+      var scrollEl = document.getElementById(scrollId);
+      if (!scrollEl) return;
+      var shell = scrollEl.closest('.source-group-shell');
+      var target = scrollEl.querySelector('[data-source-anchor="' + anchorId + '"]');
+      if (!shell || !target) return;
+      setAuthActiveAnchor(shell, anchorId);
+      scrollEl.scrollTo({ top: Math.max(0, target.offsetTop - 8), behavior: 'smooth' });
+    }
+
+    function setAuthActiveAnchor(shell, anchorId) {
+      shell.querySelectorAll('.source-group-nav-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.sourceTarget === anchorId); });
+      shell.querySelectorAll('.source-item-panel').forEach(function(p) { p.classList.toggle('is-active', p.dataset.sourceAnchor === anchorId); });
+    }
+
+    function bindAuthSourceShells() {
+      document.querySelectorAll('#auth-source-groups .source-group-shell').forEach(function(shell) {
+        var scrollEl = shell.querySelector('.source-group-scroll');
+        if (!scrollEl) return;
+        scrollEl.addEventListener('scroll', function() {
+          var panels = Array.from(shell.querySelectorAll('.source-item-panel'));
+          if (!panels.length) return;
+          var threshold = scrollEl.scrollTop + 24;
+          var active = panels[0];
+          panels.forEach(function(p) { if (p.offsetTop <= threshold) active = p; });
+          setAuthActiveAnchor(shell, active.dataset.sourceAnchor);
+        }, { passive: true });
+      });
+    }
+
+    function renderAuthIntegrations() {
+      var mount = document.getElementById('auth-integration-grid');
+      var counts = {
+        live: AUTH_INTEGRATIONS.filter(function(r) { return r[3].includes('현재 연동'); }).length,
+        partial: AUTH_INTEGRATIONS.filter(function(r) { return r[3].includes('설계'); }).length,
+        idle: AUTH_INTEGRATIONS.filter(function(r) { return r[3].includes('미연동'); }).length
+      };
+      mount.innerHTML =
+        '<div class="integration-summary">' +
+        '<div class="integration-summary-item"><div class="integration-summary-label">현재 연동 중</div><div class="integration-summary-value">' + counts.live + '</div><div class="integration-summary-copy">실제 데이터가 이미 이 메뉴얼 구조 안에서 읽히는 연결입니다.</div></div>' +
+        '<div class="integration-summary-item"><div class="integration-summary-label">연동 설계 전</div><div class="integration-summary-value">' + counts.partial + '</div><div class="integration-summary-copy">연결 대상은 정의됐지만 구현 경로를 아직 정하지 않은 항목입니다.</div></div>' +
+        '<div class="integration-summary-item"><div class="integration-summary-label">아직 미연동</div><div class="integration-summary-value">' + counts.idle + '</div><div class="integration-summary-copy">연결이 필요한 상태로만 정리되어 있고, 실제 데이터 반영은 아직 없습니다.</div></div>' +
+        '</div><div class="integration-list">' +
+        AUTH_INTEGRATIONS.map(function(r) {
+          var sc = r[3].includes('현재 연동') ? 'live' : r[3].includes('설계') ? 'partial' : 'idle';
+          return '<article class="integration-row">' +
+            '<div class="integration-system"><div class="integration-title">' + H(r[0]) + '</div><div class="integration-note">' + H(r[3]) + '</div></div>' +
+            '<div class="integration-column"><div class="integration-label">필요 데이터</div><div class="integration-value">' + H(r[1]) + '</div></div>' +
+            '<div class="integration-column"><div class="integration-label">권장 방식</div><div class="integration-value">' + H(r[2]) + '</div></div>' +
+            '<div class="integration-column" style="align-items:flex-end"><div class="integration-label">상태</div><span class="status ' + sc + '">' + H(r[3]) + '</span></div></article>';
+        }).join('') + '</div>';
+    }
+
+    function renderAuthStack(items, mountId) {
+      document.getElementById(mountId).innerHTML = items.map(function(item) {
+        return '<article class="stack-item"><div class="stack-item-title">' + H(item.title) + '</div>' +
+          '<div class="stack-item-copy"><div>' + H(item.body) + '</div>' +
+          (item.list && item.list.length ? '<ul>' + item.list.map(function(e) { return '<li>' + H(e) + '</li>'; }).join('') + '</ul>' : '') +
+          '</div></article>';
+      }).join('');
+    }
+
+    function renderAuthOpenItems() {
+      document.getElementById('open-items-bubble').innerHTML =
+        '<div class="open-bubble-head"><div class="open-bubble-title">확인 및 보완 필요사항</div>' +
+        '<div class="open-bubble-copy">문서 안에서 아직 확정되지 않았거나, 개발팀 제안이 필요한 항목을 이 말풍선 안에만 모았습니다.</div></div>' +
+        '<div class="open-bubble-list">' +
+        AUTH_OPEN_ITEMS.map(function(item) {
+          return '<div class="open-bubble-item"><strong>' + H(item[0]) + '. ' + H(item[1]) + '</strong><p>' + H(item[2]) + '</p></div>';
+        }).join('') + '</div>';
+    }
+
+    function toggleAuthOpenItems() {
+      var bubble = document.getElementById('open-items-bubble');
+      var button = document.getElementById('open-items-toggle');
+      var willOpen = bubble.hidden;
+      bubble.hidden = !willOpen;
+      button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    }
+
+    document.addEventListener('click', function(e) {
+      var bubble = document.getElementById('open-items-bubble');
+      var button = document.getElementById('open-items-toggle');
+      if (!bubble || bubble.hidden) return;
+      if (bubble.contains(e.target) || button.contains(e.target)) return;
+      bubble.hidden = true;
+      button.setAttribute('aria-expanded', 'false');
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var bubble = document.getElementById('open-items-bubble');
+        if (bubble && !bubble.hidden) {
+          bubble.hidden = true;
+          document.getElementById('open-items-toggle').setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+
+    /* ======================= */
+    /* === MCN View        === */
+    /* ======================= */
+    var MCN_NAV = [
+      { id: 'mcn-section-overview', label: '1. Product Overview' },
+      { id: 'mcn-section-access', label: '2. Access & Role Model' },
+      { id: 'mcn-section-projects', label: '3. Project & Mission Flow' },
+      { id: 'mcn-section-review', label: '4. Submission & Review' },
+      { id: 'mcn-section-rewards', label: '5. Rewards, Milestone & Tier' },
+      { id: 'mcn-section-admin', label: '6. Admin & Operations' }
+    ];
+
+    document.getElementById('mcn-manual-nav').innerHTML = MCN_NAV.map(function(item) {
+      return '<a class="nav-link" href="#' + item.id + '">' + item.label + '</a>';
+    }).join('');
+
+    /* ======================= */
+    /* === Ops View        === */
+    /* ======================= */
+    var OPS_NAV = [
+      { id: 'ops-section-overview', label: '1. Console Overview' },
+      { id: 'ops-section-map', label: '2. Console Map' },
+      { id: 'ops-section-ledger', label: '3. Ledger & Pipeline' },
+      { id: 'ops-section-risk', label: '4. Risk & Account Control' },
+      { id: 'ops-section-authority', label: '5. Authority Ops' },
+      { id: 'ops-section-incidents', label: '6. Incidents & Response' }
+    ];
+
+    document.getElementById('ops-manual-nav').innerHTML = OPS_NAV.map(function(item) {
+      return '<a class="nav-link" href="#' + item.id + '">' + item.label + '</a>';
+    }).join('');
+
+    /* Boot: apply INITIAL_VIEW if set by parent */
+    if (INITIAL_VIEW && INITIAL_VIEW !== 'library') {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active-view'); });
+      var bootEl = document.getElementById('view-' + INITIAL_VIEW);
+      if (bootEl) bootEl.classList.add('active-view');
+      document.getElementById('breadcrumb-bar').innerHTML = BREADCRUMBS[INITIAL_VIEW] || BREADCRUMBS.library;
+      currentView = INITIAL_VIEW;
+      if (INITIAL_VIEW === 'authority') initAuthority();
+    }
+  </script>
+
+
+</body></html>

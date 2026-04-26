@@ -8,18 +8,25 @@ import { ReactUICanvas } from '../components/ReactUICanvas'
 import DebugOverlay from '../components/DebugOverlay'
 import EmptySplashBackground from '../pages/default/EmptySplashBackground'
 import BlueScreenSplash from '../pages/default/BlueScreenSplash'
+import LandingPage from '../pages/punker/LandingPage'
+import HolderPage from '../pages/punker/HolderPage'
 
 import { UnityWrapper } from '../providers/unity/UnityWrapper'
 
 import { log } from '../utils/log';
 import { getLanguage, GlobalEnv } from '../config/GlobalEnv';
-import { GameMainLoop } from '../content/GameMainLoop';
+import { GameMainLoop } from '../core/unity/GameMainLoop';
+
+
 
 
 function PureUnityWebViewInner() {
     const [isReady, setIsReady] = useState(false)
-    const [isStarted, setIsStarted] = useState(false)
     const [isShowStartBlueScreen, setIsShowStartBlueScreen] = useState(false)
+    const [isShowWalletConnect, setIsWalletConnect] = useState(false)
+    const [isShowHolderPage, setIsShowHolderPage] = useState(false);
+    const [isStartedGameLoop, setIsStartedGameLoop] = useState(false)
+
 
     const [startUnity, setStartUnity] = useState(false)
     const [isBlueScreen, setIsBlueScreen] = useState(false)
@@ -27,9 +34,13 @@ function PureUnityWebViewInner() {
     const [userUUID, setUserUUID] = useState<string>('');
 
     const isReadyRef = useRef(false)
-    const isStartedRef = useRef(false)
+    const isShowWalletConnectRef = useRef(false)
+    const isStartedGameLoopRef = useRef(false)
     const isFirstGameLoopRef = useRef(true)
     const isBlueScreenRef = useRef(false)
+
+    const [address, setAddress] = useState<string>('');
+    const [authToken, setAuthToken] = useState<string>('');
 
     const handleReady = () => {
 
@@ -48,23 +59,46 @@ function PureUnityWebViewInner() {
             isReadyRef.current = false
         }
         else {
-            setBlueScreenStatus('punker_start')
+            setBlueScreenStatus('')
             setIsReady(true)
             isReadyRef.current = true
             setIsShowStartBlueScreen(true)
+
+            setIsWalletConnect(true)
+            isShowWalletConnectRef.current = true
         }
     }
 
-    const handleStarted = async () => {
-        setIsShowStartBlueScreen(false)
 
+    // 
+    type WebLoopParams = {
+        address: string;
+        token: string;
+    };
+    const hanleWebLoop = async ({ address, token }: WebLoopParams) => {
+        console.log('[WebLoop] start:', address, token);
+
+        setAddress(address);
+        setAuthToken(token);
+
+        setIsWalletConnect(false);
+        setIsShowStartBlueScreen(false);
+
+        // HolderPage 표시
+        setIsShowHolderPage(true);
+    };
+
+
+    // 아래는 아레나 시스템이 구축 된 이후 활성화.
+    const hanleGameStart = async () => {
+        setIsShowStartBlueScreen(false)
         setTimeout(() => {
-            setIsStarted(true)
-            isStartedRef.current = true
-        }, 10)
+            setIsStartedGameLoop(true)
+            isStartedGameLoopRef.current = true
+        }, 1)
     }
 
-    const handleLoop = () => {
+    const handleGameLoop = () => {
         const isFirst = isFirstGameLoopRef.current
         if (isFirst) isFirstGameLoopRef.current = false
 
@@ -79,11 +113,11 @@ function PureUnityWebViewInner() {
 
     useEffect(() => {
         const loopId = setInterval(() => {
-            if (isStartedRef.current)
-                handleLoop()
+            if (isStartedGameLoopRef.current)
+                handleGameLoop()
         }, 100)
         return () => clearInterval(loopId)
-    }, [isStarted])
+    }, [isStartedGameLoop])
 
     const handleExitApp = () => {
         const exitUrl = import.meta.env.VITE_EXIT_URL
@@ -114,10 +148,26 @@ function PureUnityWebViewInner() {
             {isShowStartBlueScreen && (
                 <BlueScreenSplash
                     statusScreen={blueScreenStatus}
-                    onExited={handleStarted}
+                    onExited={async () => { }}
                 />
-
             )}  {/* z-index = 1 */}
+
+            {isShowWalletConnect && (
+                <LandingPage
+                    onSuccesed={({ address, token }) => {
+                        console.log('success address:', address, token);
+                        hanleWebLoop({ address, token });
+                    }}
+                />
+            )}
+
+            {isShowHolderPage && (
+                <HolderPage
+                    address={address}
+                    token={authToken}
+                />
+            )}
+
 
             {isReady && startUnity && (
                 <UnityWrapper

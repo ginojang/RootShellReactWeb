@@ -71,7 +71,8 @@ export default function BlueScreenStartSplash({ statusScreen, onExited }: BlueSc
             return getText('t025'); //'설정 → 일반 → 소프트웨어 업데이트에서 최신 버전으로 업데이트하세요.'
         }
         else
-            return 'Touch to start the Arena game'
+            //return 'Touch to start the Arena game'
+            return ''
     }
 
     const addTextMesh = (scene: THREE.Scene, mesh: THREE.Mesh, currentMesh: any) => {

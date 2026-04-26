@@ -6,7 +6,7 @@ import {
   handleWriteJson,
   handleReadJson,
   handleChangeLanguage,
-} from '../../content/GameMainLoop'
+} from '../../core/unity/GameMainLoop'
 
 
 import {
