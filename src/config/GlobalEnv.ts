@@ -170,24 +170,13 @@ const setDefaultFont = (): void => {
 
     const lang = getLanguage();
 
-    let fontUrl = '/fonts/OTFontMaplestoryBold.ttf';
-    let fontName = 'MaplestoryBold';
-
-    if (lang === 'japanese') {
-        fontUrl = '/fonts/OTFontMPLUSRounded1cBold.ttf';
-        fontName = 'MPLUSRounded1cBold';
-    }
+    const fontFamily = lang === 'japanese'
+        ? "'Noto Sans JP', 'Pretendard Variable', Pretendard, sans-serif"
+        : "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
     style.textContent = `
-      @font-face {
-        font-family: '${fontName}';
-        src: url('${fontUrl}') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-      }
-
       html, body {
-        font-family: '${fontName}', sans-serif !important;
+        font-family: ${fontFamily} !important;
       }
     `;
 

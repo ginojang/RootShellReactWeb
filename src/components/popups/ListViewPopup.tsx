@@ -38,7 +38,7 @@ export function ListViewPopup({ title, content, align, onOkay }: ListViewPopupPo
             }}>
             <span
                 style={{
-                    fontFamily: 'MaplestoryBold', fontSize: `clamp(${fontSize}px, 3vw, ${fontSize}px)`, color: '#fff', marginTop: `${textMarginTop}px`,
+                    fontFamily: "'Pretendard Variable', Pretendard, sans-serif", fontSize: `clamp(${fontSize}px, 3vw, ${fontSize}px)`, color: '#fff', marginTop: `${textMarginTop}px`,
                     textShadow: `0.8px -0.8px 0 #001898, -0.8px -0.8px 0 #001898, -0.8px 0.8px 0 #001898, 0.8px 0.8px 0 #001898`,
                 }}>{label}</span>
         </div>
@@ -63,7 +63,7 @@ export function ListViewPopup({ title, content, align, onOkay }: ListViewPopupPo
             }} />
             <div style={{
                 position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
-                fontSize: '24px', fontFamily: 'MaplestoryBold', color: '#fff', textAlign: 'center', padding: '0 8px',
+                fontSize: '24px', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", color: '#fff', textAlign: 'center', padding: '0 8px',
                 textShadow: '1.4px -1.4px 0 #46291B, -1.4px -1.4px 0 #46291B, 1.4px 1.4px 0 #46291B, -1.4px 1.4px 0 #46291B',
                 zIndex: 1, lineHeight: '1',
             }}>{title}</div>
@@ -82,7 +82,7 @@ export function ListViewPopup({ title, content, align, onOkay }: ListViewPopupPo
                         margin: 0,
                         listStyle: 'none',
                         fontSize: '16px',
-                        fontFamily: 'MaplestoryBold',
+                        fontFamily: "'Pretendard Variable', Pretendard, sans-serif",
                         lineHeight: '1.4',
                         textAlign,
                     }}>

@@ -47,7 +47,9 @@ export function YesNoPopup({ title, content, onYes, onNo }: YesNoPopupProps) {
 
     // ✅ 언어별 폰트 선택
     const lang = getLanguage();
-    const fontFamily = lang === "japanese" ? "MPLUSRounded1cBold" : "MaplestoryBold";
+    const fontFamily = lang === "japanese"
+        ? "'Noto Sans JP', 'Pretendard Variable', Pretendard, sans-serif"
+        : "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
     return (
         <div style={{

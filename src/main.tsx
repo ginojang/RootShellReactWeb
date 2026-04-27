@@ -7,15 +7,8 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
 const globalStyle = document.createElement('style')
 globalStyle.textContent = `
-  @font-face {
-    font-family: 'MaplestoryBold';
-    src: url('/fonts/OTFontMaplestoryBold.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
-
   html, body {
-    font-family: 'MaplestoryBold', sans-serif;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
     width: 100vw;
