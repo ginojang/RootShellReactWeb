@@ -1,10 +1,10 @@
 // LandingPage.tsx
 import { useState } from 'react';
 import { connectMetaMask } from '../../core/punker/metaMask';
-import { requestNonce, verifyWallet, getDashboard } from '../../network/http/authApi';
+import { requestNonce, verifyWallet, getDashboard, type DashboardStore } from '../../network/http/authApi';
 
 type LandingPageProps = {
-    onSuccesed?: (data: { address: string; token: string }) => void;
+    onSuccesed?: (data: { address: string; token: string; stores: DashboardStore[] }) => void;
 };
 
 type Step = 'idle' | 'connecting' | 'signing' | 'verifying' | 'checking';
@@ -39,6 +39,12 @@ export default function LandingPage({ onSuccesed }: LandingPageProps) {
         try {
             setStep('connecting');
             const result = await connectMetaMask();
+
+            const expectedChain = import.meta.env.VITE_PUNKER_CHAIN_ID;
+            if (result.chainId.toLowerCase() !== expectedChain.toLowerCase()) {
+                throw new Error(`BSC 테스트넷(${expectedChain})에 연결해주세요. 현재 체인: ${result.chainId}`);
+            }
+
             setAddress(result.address);
 
             const nonceResult = await requestNonce(result.address);
@@ -66,7 +72,7 @@ export default function LandingPage({ onSuccesed }: LandingPageProps) {
                 return;
             }
 
-            onSuccesed?.({ address: result.address, token: verifyResult.data.token });
+            onSuccesed?.({ address: result.address, token: verifyResult.data.token, stores: dashboardResult.data.stores });
         } catch (err) {
             const message = err instanceof Error ? err.message : '지갑 연결 중 오류가 발생했습니다.';
             setError(message);

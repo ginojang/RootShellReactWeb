@@ -1,5 +1,6 @@
 
 // src/content/O2JamMain.ts
+/*
 import { showLoadingSpinner, showOkayPopup } from '../../components/ReactUICanvas'
 import { sendUnityMessage } from '../../providers/unity/UnityMessageHandler'
 import { log, logError } from '../../utils/log'
@@ -60,7 +61,7 @@ export async function O2JamMainLoop({ isFirstLoop, onStartUnity }: O2JamMainLoop
 
     if (isFirstLoop) {
 
-        /*
+        
         const result = await getWalletUserInfo();
         log(`[🧠MainLoop 111  ---] getWalletUserInfo result: ${result}`);
         //
@@ -82,7 +83,7 @@ export async function O2JamMainLoop({ isFirstLoop, onStartUnity }: O2JamMainLoop
             } catch (e) {
                 log(`[🧠MainLoop] ❌ JSON 파싱 실패: ${e}`);
             }
-        }*/
+        }
     }
 }
 
@@ -219,3 +220,5 @@ export async function handleAddFriends(_payload: UnitySimpleMessage, id?: number
 export async function handleSubtractCoin(payload: UnityBodyJsonMessage, id?: number) {
 
 }
+
+*/

@@ -1,3 +1,5 @@
+const API_BASE = import.meta.env.VITE_PUNKER_API_BASE_URL;
+
 export type NonceResponse = {
     ok: boolean;
     data: {
@@ -15,53 +17,156 @@ export type VerifyResponse = {
     };
 };
 
-const API_BASE_URL = 'http://192.168.0.28:3000/punker/api/1.0';
+export type DashboardMission = {
+    missionId: number;
+    missionKey: string;
+    title: string;
+    description: string | null;
+    status: string;
+};
 
-export async function requestNonce(address: string): Promise<NonceResponse> {
-    const res = await fetch(`${API_BASE_URL}/auth/nonce`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address }),
-    });
+export type DashboardStore = {
+    storeId: string;
+    storeName: string;
+    contractAddress: string;
+    balance: string;
+    tier: string;
+    rewardRate: number;
+    missions: DashboardMission[];
+};
 
-    if (!res.ok) {
-        throw new Error('nonce 요청 실패');
+export type DashboardResponse = {
+    ok: boolean;
+    data: {
+        isHolder: boolean;
+        stores: DashboardStore[];
+    };
+};
+
+async function apiFetch<T>(path: string, init?: RequestInit, withAuth = false): Promise<T> {
+    const headers: Record<string, string> = {
+        ...(init?.headers as Record<string, string>),
+    };
+    if (withAuth) {
+        const token = localStorage.getItem('punker_token');
+        if (token) headers['Authorization'] = `Bearer ${token}`;
     }
-
-    return (await res.json()) as NonceResponse;
+    const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    const body = await res.json() as { ok: boolean; message?: string } & T;
+    if (!res.ok) {
+        throw new Error(body.message ?? `API 오류 (${res.status})`);
+    }
+    return body;
 }
 
-export async function verifyWallet(params: {
+export function requestNonce(address: string): Promise<NonceResponse> {
+    return apiFetch<NonceResponse>('/auth/nonce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+    });
+}
+
+export function verifyWallet(params: {
     address: string;
     message: string;
     signature: string;
 }): Promise<VerifyResponse> {
-    const res = await fetch(`${API_BASE_URL}/auth/verify`, {
+    return apiFetch<VerifyResponse>('/auth/verify', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
     });
-
-    if (!res.ok) {
-        throw new Error('서명 검증 실패');
-    }
-
-    return (await res.json()) as VerifyResponse;
 }
 
+export function getDashboard(address: string): Promise<DashboardResponse> {
+    return apiFetch<DashboardResponse>(`/dashboard?address=${encodeURIComponent(address)}`, undefined, true);
+}
 
-export async function getDashboard(address: string) {
-    const res = await fetch(
-        `http://localhost:3000/punker/api/1.0/dashboard?address=${encodeURIComponent(address)}`
-    );
+export type MissionSubmission = {
+    submissionId: number;
+    missionId: number;
+    title: string;
+    storeName: string;
+    status: 'approved' | 'pending' | 'rejected';
+    rejectReason: string | null;
+    expReward: number | null;
+    submittedAt: string;
+};
 
-    if (!res.ok) {
-        throw new Error(`Dashboard API failed: ${res.status}`);
-    }
+export type ExpLogEntry = {
+    expId: number;
+    expCode: string;
+    name: string;
+    amount: number;
+    category: string;
+    earnedAt: string;
+};
 
-    return res.json();
+export type ActivityResponse = {
+    ok: boolean;
+    data: {
+        submissions: MissionSubmission[];
+        expLog: ExpLogEntry[];
+    };
+};
+
+export function getActivity(): Promise<ActivityResponse> {
+    return apiFetch<ActivityResponse>('/activity', undefined, true);
+}
+
+export type UserReward = {
+    rewardId: number;
+    name: string;
+    category: string;
+    status: 'ready' | 'review' | 'claimed';
+    source: string;
+    gpAmount: number | null;
+    convertibleToNft: boolean;
+};
+
+export type SettlementRecord = {
+    settlementId: number;
+    label: string;
+    storeName: string;
+    period: string;
+    amount: string;
+    currency: 'USDT' | 'GP';
+    status: 'completed' | 'pending';
+};
+
+export type RewardResponse = {
+    ok: boolean;
+    data: {
+        gpBalance: number;
+        supporterCredits: number;
+        rewards: UserReward[];
+        settlements: SettlementRecord[];
+    };
+};
+
+export type ClaimResponse = {
+    ok: boolean;
+    data: { rewardId: number; newGpBalance: number };
+};
+
+export type ConvertGpResponse = {
+    ok: boolean;
+    data: { previousGp: number; convertedAmount: number; unit: string; newGpBalance: number };
+};
+
+export function getReward(): Promise<RewardResponse> {
+    return apiFetch<RewardResponse>('/reward', undefined, true);
+}
+
+export function claimReward(rewardId: number): Promise<ClaimResponse> {
+    return apiFetch<ClaimResponse>(`/reward/claim/${rewardId}`, { method: 'POST' }, true);
+}
+
+export function convertGp(mode: 'pvt' | 'prepaid'): Promise<ConvertGpResponse> {
+    return apiFetch<ConvertGpResponse>('/reward/gp-convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+    }, true);
 }

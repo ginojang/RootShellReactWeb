@@ -8,6 +8,8 @@ interface ImportMetaEnv {
     readonly VITE_APP_IS_TUTORIAL_SKIP: string;
 
     readonly VITE_ROOT_SHELL_4_API_BASE_URL: string;
+    readonly VITE_PUNKER_API_BASE_URL: string;
+    readonly VITE_PUNKER_CHAIN_ID: string;
 
     // KAIA
     readonly VITE_KAIA_CLIENT_ID: string;

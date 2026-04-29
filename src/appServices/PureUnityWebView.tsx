@@ -16,6 +16,7 @@ import { UnityWrapper } from '../providers/unity/UnityWrapper'
 import { log } from '../utils/log';
 import { getLanguage, GlobalEnv } from '../config/GlobalEnv';
 import { GameMainLoop } from '../core/unity/GameMainLoop';
+import { type DashboardStore } from '../network/http/authApi';
 
 
 
@@ -41,6 +42,7 @@ function PureUnityWebViewInner() {
 
     const [address, setAddress] = useState<string>('');
     const [authToken, setAuthToken] = useState<string>('');
+    const [stores, setStores] = useState<DashboardStore[]>([]);
 
     const handleReady = () => {
 
@@ -74,12 +76,14 @@ function PureUnityWebViewInner() {
     type WebLoopParams = {
         address: string;
         token: string;
+        stores: DashboardStore[];
     };
-    const hanleWebLoop = async ({ address, token }: WebLoopParams) => {
+    const hanleWebLoop = async ({ address, token, stores }: WebLoopParams) => {
         console.log('[WebLoop] start:', address, token);
 
         setAddress(address);
         setAuthToken(token);
+        setStores(stores);
 
         setIsWalletConnect(false);
         setIsShowStartBlueScreen(false);
@@ -90,6 +94,7 @@ function PureUnityWebViewInner() {
 
 
     // 아래는 아레나 시스템이 구축 된 이후 활성화.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hanleGameStart = async () => {
         setIsShowStartBlueScreen(false)
         setTimeout(() => {
@@ -154,9 +159,9 @@ function PureUnityWebViewInner() {
 
             {isShowWalletConnect && (
                 <LandingPage
-                    onSuccesed={({ address, token }) => {
-                        console.log('success address:', address, token);
-                        hanleWebLoop({ address, token });
+                    onSuccesed={({ address, token, stores }) => {
+                        console.log('[WebLoop] start:', address, token);
+                        hanleWebLoop({ address, token, stores });
                     }}
                 />
             )}
@@ -165,6 +170,7 @@ function PureUnityWebViewInner() {
                 <HolderPage
                     address={address}
                     token={authToken}
+                    stores={stores}
                 />
             )}
 
