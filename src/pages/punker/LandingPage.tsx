@@ -1,10 +1,10 @@
 // LandingPage.tsx
 import { useState } from 'react';
 import { connectMetaMask } from '../../core/punker/metaMask';
-import { requestNonce, verifyWallet, getDashboard, type DashboardStore } from '../../network/http/authApi';
+import { requestNonce, verifyWallet, getDashboard, type DashboardStore, type UserProfile } from '../../network/http/authApi';
 
 type LandingPageProps = {
-    onSuccesed?: (data: { address: string; token: string; stores: DashboardStore[] }) => void;
+    onSuccesed?: (data: { address: string; token: string; stores: DashboardStore[]; profile: UserProfile }) => void;
 };
 
 type Step = 'idle' | 'connecting' | 'signing' | 'verifying' | 'checking';
@@ -72,7 +72,7 @@ export default function LandingPage({ onSuccesed }: LandingPageProps) {
                 return;
             }
 
-            onSuccesed?.({ address: result.address, token: verifyResult.data.token, stores: dashboardResult.data.stores });
+            onSuccesed?.({ address: result.address, token: verifyResult.data.token, stores: dashboardResult.data.stores, profile: dashboardResult.data.profile });
         } catch (err) {
             const message = err instanceof Error ? err.message : '지갑 연결 중 오류가 발생했습니다.';
             setError(message);

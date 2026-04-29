@@ -16,7 +16,7 @@ import { UnityWrapper } from '../providers/unity/UnityWrapper'
 import { log } from '../utils/log';
 import { getLanguage, GlobalEnv } from '../config/GlobalEnv';
 import { GameMainLoop } from '../core/unity/GameMainLoop';
-import { type DashboardStore } from '../network/http/authApi';
+import { type DashboardStore, type UserProfile } from '../network/http/authApi';
 
 
 
@@ -43,6 +43,7 @@ function PureUnityWebViewInner() {
     const [address, setAddress] = useState<string>('');
     const [authToken, setAuthToken] = useState<string>('');
     const [stores, setStores] = useState<DashboardStore[]>([]);
+    const [profile, setProfile] = useState<UserProfile>({ assetScore: 0, trustScore: 0, activityScore: 0, realityBonus: 0, snsFollowers: 0, authorityLevel: 1, authorityTotalExp: 0 });
 
     const handleReady = () => {
 
@@ -77,13 +78,15 @@ function PureUnityWebViewInner() {
         address: string;
         token: string;
         stores: DashboardStore[];
+        profile: UserProfile;
     };
-    const hanleWebLoop = async ({ address, token, stores }: WebLoopParams) => {
+    const hanleWebLoop = async ({ address, token, stores, profile }: WebLoopParams) => {
         console.log('[WebLoop] start:', address, token);
 
         setAddress(address);
         setAuthToken(token);
         setStores(stores);
+        if (profile) setProfile(profile);
 
         setIsWalletConnect(false);
         setIsShowStartBlueScreen(false);
@@ -159,9 +162,9 @@ function PureUnityWebViewInner() {
 
             {isShowWalletConnect && (
                 <LandingPage
-                    onSuccesed={({ address, token, stores }) => {
+                    onSuccesed={({ address, token, stores, profile }) => {
                         console.log('[WebLoop] start:', address, token);
-                        hanleWebLoop({ address, token, stores });
+                        hanleWebLoop({ address, token, stores, profile });
                     }}
                 />
             )}
@@ -171,6 +174,7 @@ function PureUnityWebViewInner() {
                     address={address}
                     token={authToken}
                     stores={stores}
+                    profile={profile}
                 />
             )}
 

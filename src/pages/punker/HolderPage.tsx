@@ -1,16 +1,18 @@
 // HolderPage.tsx
 import { useState, useEffect } from 'react';
 import {
-    type DashboardStore,
+    type DashboardStore, type UserProfile,
     type MissionSubmission, type ExpLogEntry, getActivity,
     type UserReward, type SettlementRecord,
     getReward, claimReward as apiClaimReward, convertGp as apiConvertGp,
+    type OpsAbuseCheck, type OpsExpEntry, type OpsLedgerEntry, getOps,
 } from '../../network/http/authApi';
 
 type HolderPageProps = {
     address: string;
     token: string;
     stores: DashboardStore[];
+    profile: UserProfile;
 };
 
 // ── Milestone helper ──────────────────────────────────────────────────────────
@@ -38,9 +40,19 @@ const dimText  = 'rgba(255,255,255,0.72)';
 const mutedText= 'rgba(255,255,255,0.48)';
 const line     = 'rgba(255,255,255,0.08)';
 
+const FALLBACK_PROFILE: UserProfile = { assetScore: 0, trustScore: 0, activityScore: 0, realityBonus: 0, snsFollowers: 0, authorityLevel: 1, authorityTotalExp: 0 };
+
 function shortAddr(addr: string) {
     if (!addr || addr.length < 10) return addr;
     return addr.slice(0, 6) + '...' + addr.slice(-4);
+}
+
+function getAuthorityTier(level: number): { num: number; name: string } {
+    if (level < 20) return { num: 1, name: 'Wanderer' };
+    if (level < 40) return { num: 2, name: 'Punk' };
+    if (level < 60) return { num: 3, name: 'Résistance' };
+    if (level < 80) return { num: 4, name: 'Vanguard' };
+    return { num: 5, name: 'Cypherpunk' };
 }
 
 // ── Shared primitives ────────────────────────────────────────────────────────
@@ -128,22 +140,29 @@ function OverviewHeader({ eyebrow, title, desc, badge }: {
 }
 
 // ── Profile Header ────────────────────────────────────────────────────────────
-function ProfileHeader({ address, stores, onDisconnect }: { address: string; stores: DashboardStore[]; onDisconnect?: () => void }) {
-    const totalNft  = stores.reduce((s, st) => s + parseInt(st.balance || '0'), 0);
+function ProfileHeader({ address, stores, profile: rawProfile, onDisconnect }: {
+    address: string;
+    stores: DashboardStore[];
+    profile?: UserProfile;
+    onDisconnect?: () => void;
+}) {
+    const profile    = rawProfile ?? FALLBACK_PROFILE;
+    const totalNft   = stores.reduce((s, st) => s + parseInt(st.balance || '0'), 0);
     const storeCount = stores.length;
     const milestone  = getMilestone(totalNft);
+    const tier       = getAuthorityTier(profile.authorityLevel);
 
     const stats = [
-        { label: '자산', value: '27' },
-        { label: '신뢰', value: '10' },
-        { label: '활동', value: '12' },
-        { label: '현실 보너스', value: '7' },
+        { label: '자산',       value: String(profile.assetScore) },
+        { label: '신뢰',       value: String(profile.trustScore) },
+        { label: '활동',       value: String(profile.activityScore) },
+        { label: '현실 보너스', value: String(profile.realityBonus) },
     ];
     const tags: { label: string; color: BadgeColor }[] = [
-        { label: `Authority NFT ${totalNft}개`, color: 'nft' },
-        { label: `RWA NFT ${storeCount}종 확인`, color: 'yield' },
-        { label: milestone.band, color: 'special' },
-        { label: 'SNS 팔로워 3,200', color: 'tier' },
+        { label: `Authority NFT ${totalNft}개`,                color: 'nft'     },
+        { label: `RWA NFT ${storeCount}종 확인`,               color: 'yield'   },
+        { label: milestone.band,                               color: 'special' },
+        { label: `SNS 팔로워 ${profile.snsFollowers.toLocaleString()}`, color: 'tier' },
     ];
     return (
         <div style={{
@@ -163,7 +182,7 @@ function ProfileHeader({ address, stores, onDisconnect }: { address: string; sto
                         </span>
                     </div>
                     <div style={{ fontSize: 12, color: dimText }}>
-                        프로젝트 홀더 · 권위 게이지 Tier 3 · 홀더 인증 완료
+                        프로젝트 홀더 · 권위 게이지 Tier {tier.num} · 홀더 인증 완료
                     </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
@@ -174,7 +193,7 @@ function ProfileHeader({ address, stores, onDisconnect }: { address: string; sto
                         textAlign: 'center',
                     }}>
                         <div style={{ fontSize: 10, color: mcn, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Authority</div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: paper }}>Tier 3 · 56점</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: paper }}>Tier {tier.num} · {profile.authorityLevel}점</div>
                     </div>
                     <button
                         onClick={onDisconnect}
@@ -1119,7 +1138,7 @@ function SettlementHistory({ settlements }: { settlements: SettlementRecord[] })
     );
 }
 
-// ── Ops tab — types & mock data ───────────────────────────────────────────────
+// ── Ops tab ───────────────────────────────────────────────────────────────────
 type RiskLevel = 'MONITOR' | 'WARNING' | 'HOLD' | 'FREEZE';
 
 const RISK_META: Record<RiskLevel, { color: string; bg: string; border: string; desc: string }> = {
@@ -1129,51 +1148,32 @@ const RISK_META: Record<RiskLevel, { color: string; bg: string; border: string; 
     FREEZE:  { color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.22)', desc: '계정 동결' },
 };
 
-type GpLedgerEntry = {
-    id: string;
-    label: string;
-    source: string;
-    date: string;
-    delta: number;
-};
-
-const GP_LEDGER: GpLedgerEntry[] = [
-    { id: 'gp-001', label: 'MCN 미션 보상', source: '남산타워 숏폼 #2',         date: '2026-04-28', delta: +16000 },
-    { id: 'gp-002', label: 'MCN 미션 보상', source: '남산타워 숏폼 #1',         date: '2026-04-27', delta: +16000 },
-    { id: 'gp-003', label: '아레나 서포터 보상', source: '배틀 APS-240424',      date: '2026-04-24', delta: +8000  },
-    { id: 'gp-004', label: 'GP → PVT 환전',  source: '환전 REQ-0421',           date: '2026-04-21', delta: -50000 },
-    { id: 'gp-005', label: 'MCN 미션 보상',  source: '을지로 갈비 리뷰',         date: '2026-04-15', delta: +24000 },
-];
-
 const AUTHORITY_TIERS_OPS = [
-    { name: 'Wanderer',   range: [1,19],   color: mutedText },
-    { name: 'Punk',       range: [20,39],  color: mcn       },
-    { name: 'Résistance', range: [40,59],  color: arena     },
-    { name: 'Vanguard',   range: [60,79],  color: exchange  },
-    { name: 'Cypherpunk', range: [80,100], color: '#c084fc' },
+    { name: 'Wanderer',   range: [1,  19],  color: mutedText  },
+    { name: 'Punk',       range: [20, 39],  color: mcn        },
+    { name: 'Résistance', range: [40, 59],  color: arena      },
+    { name: 'Vanguard',   range: [60, 79],  color: exchange   },
+    { name: 'Cypherpunk', range: [80, 100], color: '#c084fc'  },
 ];
 
-const WRITEBACK_PAYLOAD = {
-    authorityCandidateExp: 16,
-    settlementStatus: 'review',
-    walletLinkedRecordReady: false,
-    previewOnly: true,
+const TIER_PERKS: Record<string, string[]> = {
+    Wanderer:   [],
+    Punk:       ['배틀룸 우선 노출', '수수료 감면'],
+    Résistance: ['배틀룸 우선 노출', '수수료 감면', 'MCN 배율 +5%'],
+    Vanguard:   ['배틀룸 우선 노출', '수수료 감면', 'MCN 배율 +10%', '전용 챌린지 접근'],
+    Cypherpunk: ['배틀룸 우선 노출', '수수료 전액 면제', 'MCN 배율 +15%', '전용 챌린지 접근', '운영 패널 열람'],
 };
 
 // ── Ops: Account risk panel ───────────────────────────────────────────────────
-function AccountRiskPanel() {
-    const riskScore: number = 12;
-    const level: RiskLevel  = 'MONITOR';
-    const meta = RISK_META[level];
+function AccountRiskPanel({ riskScore, riskLevel, abuseChecks }: {
+    riskScore: number;
+    riskLevel: RiskLevel;
+    abuseChecks: OpsAbuseCheck[];
+}) {
+    const meta = RISK_META[riskLevel] ?? RISK_META['MONITOR'];
+    const level = riskLevel;
 
-    const abuseChecks = [
-        { label: 'Daily Cap',         status: true,  note: '일일 EXP 상한 정상' },
-        { label: 'TX Hash Dedupe',    status: true,  note: '중복 트랜잭션 없음' },
-        { label: 'Referral Cap',      status: true,  note: '레퍼럴 상한 정상' },
-        { label: '조기 해지 패널티',  status: true,  note: '해지 이력 없음' },
-    ];
-
-    const thresholds: { range: string; level: RiskLevel; }[] = [
+    const thresholds: { range: string; level: RiskLevel }[] = [
         { range: '0 ~ 39',  level: 'MONITOR' },
         { range: '40 ~ 64', level: 'WARNING' },
         { range: '65 ~ 79', level: 'HOLD'    },
@@ -1261,25 +1261,19 @@ function AccountRiskPanel() {
 }
 
 // ── Ops: Authority gauge panel ────────────────────────────────────────────────
-function AuthorityGaugePanel() {
-    const level     = 34;
-    const totalExp  = 1820;
-    const tierIdx   = 1;                          // Punk (0-indexed)
+function AuthorityGaugePanel({ level, totalExp, recentExp }: {
+    level: number;
+    totalExp: number;
+    recentExp: OpsExpEntry[];
+}) {
+    const tierIdx   = Math.max(0, AUTHORITY_TIERS_OPS.findIndex(t => level >= t.range[0] && level <= t.range[1]));
     const tier      = AUTHORITY_TIERS_OPS[tierIdx];
     const nextTier  = AUTHORITY_TIERS_OPS[tierIdx + 1];
     const [lo, hi]  = tier.range;
     const expToNext = nextTier ? nextTier.range[0] - level : 0;
     const pct       = Math.round(((level - lo) / (hi - lo + 1)) * 100);
 
-    const perks = ['배틀룸 우선 노출', '수수료 감면'];
-
-    const recentExp = [
-        { code: 'EXP-04', name: 'Tori / 무기 / Oculla 구매', amount: 80,  category: 'NFT' },
-        { code: 'EXP-11', name: 'Arena Support',              amount: 24,  category: '아레나' },
-        { code: 'EXP-12', name: 'MCN 추가 미션 (숏폼 #2)',   amount: 12,  category: 'MCN' },
-        { code: 'EXP-12', name: 'MCN 추가 미션 (숏폼 #1)',   amount: 12,  category: 'MCN' },
-        { code: 'EXP-09', name: 'Arena Battle Play',          amount: 12,  category: '아레나' },
-    ];
+    const perks = TIER_PERKS[tier.name] ?? [];
 
     return (
         <Board>
@@ -1368,7 +1362,7 @@ function AuthorityGaugePanel() {
                                 padding: '8px 12px', borderRadius: 10,
                                 border: `1px solid ${line}`, background: 'rgba(255,255,255,0.02)',
                             }}>
-                                <span style={{ fontSize: 10, color: mutedText, fontFamily: 'monospace' }}>{e.code}</span>
+                                <span style={{ fontSize: 10, color: mutedText, fontFamily: 'monospace' }}>{e.expCode}</span>
                                 <span style={{ fontSize: 12, color: dimText }}>{e.name}</span>
                                 <span style={{ fontSize: 13, fontWeight: 700, color: mcn }}>+{e.amount}</span>
                             </div>
@@ -1381,13 +1375,8 @@ function AuthorityGaugePanel() {
 }
 
 // ── Ops: GP ledger panel ──────────────────────────────────────────────────────
-function GpLedgerPanel() {
-    let running = 240_000;
-    const rows = GP_LEDGER.map(e => {
-        const balance = running;
-        running = running - e.delta;
-        return { ...e, balance };
-    });
+function GpLedgerPanel({ gpLedger }: { gpLedger: OpsLedgerEntry[] }) {
+    const currentBalance = gpLedger[0]?.balanceAfter ?? 0;
 
     return (
         <Board>
@@ -1395,56 +1384,65 @@ function GpLedgerPanel() {
                 eyebrow="GP Ledger"
                 title="GP 원장"
                 desc="GP 잔액 변동 내역입니다. 미션 보상·아레나 배틀·환전이 순서대로 기록됩니다."
-                badge={<Badge color="special">잔액 {(240_000).toLocaleString()} GP</Badge>}
+                badge={<Badge color="special">잔액 {currentBalance.toLocaleString()} GP</Badge>}
             />
 
-            {/* Header row */}
-            <div style={{
-                display: 'grid', gridTemplateColumns: '1fr auto auto auto',
-                gap: 12, padding: '8px 14px',
-                fontSize: 10, color: mutedText, letterSpacing: '0.07em', textTransform: 'uppercase',
-                borderBottom: `1px solid ${line}`, marginBottom: 8,
-            }}>
-                <span>항목</span>
-                <span style={{ textAlign: 'right', minWidth: 60 }}>변동</span>
-                <span style={{ textAlign: 'right', minWidth: 70 }}>잔액</span>
-                <span style={{ textAlign: 'right', minWidth: 70 }}>날짜</span>
-            </div>
+            {gpLedger.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0', color: mutedText, fontSize: 14 }}>
+                    GP 내역이 없습니다.
+                </div>
+            ) : (
+                <>
+                    <div style={{
+                        display: 'grid', gridTemplateColumns: '1fr auto auto auto',
+                        gap: 12, padding: '8px 14px',
+                        fontSize: 10, color: mutedText, letterSpacing: '0.07em', textTransform: 'uppercase',
+                        borderBottom: `1px solid ${line}`, marginBottom: 8,
+                    }}>
+                        <span>항목</span>
+                        <span style={{ textAlign: 'right', minWidth: 60 }}>변동</span>
+                        <span style={{ textAlign: 'right', minWidth: 70 }}>잔액</span>
+                        <span style={{ textAlign: 'right', minWidth: 70 }}>날짜</span>
+                    </div>
 
-            <div style={{ display: 'grid', gap: 4 }}>
-                {rows.map((e) => {
-                    const isPos = e.delta > 0;
-                    return (
-                        <div key={e.id} style={{
-                            display: 'grid', gridTemplateColumns: '1fr auto auto auto',
-                            alignItems: 'center', gap: 12,
-                            padding: '11px 14px', borderRadius: 12,
-                            border: `1px solid ${line}`, background: 'rgba(255,255,255,0.02)',
-                        }}>
-                            <div>
-                                <div style={{ fontSize: 13, color: paper, fontWeight: 500 }}>{e.label}</div>
-                                <div style={{ fontSize: 11, color: mutedText }}>{e.source}</div>
-                            </div>
-                            <span style={{
-                                fontSize: 13, fontWeight: 700, textAlign: 'right', minWidth: 60,
-                                color: isPos ? '#4ade80' : '#f87171',
-                            }}>
-                                {isPos ? '+' : ''}{e.delta.toLocaleString()}
-                            </span>
-                            <span style={{ fontSize: 12, color: dimText, textAlign: 'right', minWidth: 70, fontFamily: 'monospace' }}>
-                                {e.balance.toLocaleString()}
-                            </span>
-                            <span style={{ fontSize: 11, color: mutedText, textAlign: 'right', minWidth: 70 }}>{e.date}</span>
-                        </div>
-                    );
-                })}
-            </div>
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        {gpLedger.map(e => {
+                            const isPos = e.delta > 0;
+                            return (
+                                <div key={e.ledgerId} style={{
+                                    display: 'grid', gridTemplateColumns: '1fr auto auto auto',
+                                    alignItems: 'center', gap: 12,
+                                    padding: '11px 14px', borderRadius: 12,
+                                    border: `1px solid ${line}`, background: 'rgba(255,255,255,0.02)',
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: 13, color: paper, fontWeight: 500 }}>{e.label}</div>
+                                        <div style={{ fontSize: 11, color: mutedText }}>{e.source}</div>
+                                    </div>
+                                    <span style={{
+                                        fontSize: 13, fontWeight: 700, textAlign: 'right', minWidth: 60,
+                                        color: isPos ? '#4ade80' : '#f87171',
+                                    }}>
+                                        {isPos ? '+' : ''}{e.delta.toLocaleString()}
+                                    </span>
+                                    <span style={{ fontSize: 12, color: dimText, textAlign: 'right', minWidth: 70, fontFamily: 'monospace' }}>
+                                        {e.balanceAfter.toLocaleString()}
+                                    </span>
+                                    <span style={{ fontSize: 11, color: mutedText, textAlign: 'right', minWidth: 70 }}>{e.transactedAt}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
         </Board>
     );
 }
 
 // ── Ops: Writeback preview panel ──────────────────────────────────────────────
-function WritebackPreviewPanel() {
+type WritebackData = { authorityCandidateExp: number; settlementStatus: string; walletLinkedRecordReady: boolean; previewOnly: boolean };
+
+function WritebackPreviewPanel({ writeback }: { writeback: WritebackData }) {
     const [expanded, setExpanded] = useState(false);
 
     const policyRules = [
@@ -1497,7 +1495,7 @@ function WritebackPreviewPanel() {
                     fontSize: 12, lineHeight: 1.7, color: '#a5f3fc',
                     fontFamily: 'monospace', overflowX: 'auto',
                 }}>
-                    {JSON.stringify(WRITEBACK_PAYLOAD, null, 2)}
+                    {JSON.stringify(writeback, null, 2)}
                 </pre>
             )}
 
@@ -1517,7 +1515,7 @@ function WritebackPreviewPanel() {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function HolderPage({ address, stores }: HolderPageProps) {
+export default function HolderPage({ address, stores, profile = FALLBACK_PROFILE }: HolderPageProps) {
     const [activeTab, setActiveTab] = useState<TabKey>('project');
     const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
@@ -1532,6 +1530,17 @@ export default function HolderPage({ address, stores }: HolderPageProps) {
     const [settlements, setSettlements]       = useState<SettlementRecord[]>([]);
     const [rewardLoading, setRewardLoading]   = useState(false);
     const [rewardFetched, setRewardFetched]   = useState(false);
+
+    const [opsRiskScore, setOpsRiskScore]           = useState(0);
+    const [opsRiskLevel, setOpsRiskLevel]           = useState<RiskLevel>('MONITOR');
+    const [opsAbuseChecks, setOpsAbuseChecks]       = useState<OpsAbuseCheck[]>([]);
+    const [opsAuthLevel, setOpsAuthLevel]           = useState(1);
+    const [opsTotalExp, setOpsTotalExp]             = useState(0);
+    const [opsRecentExp, setOpsRecentExp]           = useState<OpsExpEntry[]>([]);
+    const [opsGpLedger, setOpsGpLedger]             = useState<OpsLedgerEntry[]>([]);
+    const [opsWriteback, setOpsWriteback]           = useState<WritebackData>({ authorityCandidateExp: 0, settlementStatus: 'completed', walletLinkedRecordReady: false, previewOnly: true });
+    const [opsLoading, setOpsLoading]               = useState(false);
+    const [opsFetched, setOpsFetched]               = useState(false);
 
     const handleTabChange = (tab: TabKey) => {
         setSelectedStoreId(null);
@@ -1566,6 +1575,25 @@ export default function HolderPage({ address, stores }: HolderPageProps) {
             .finally(() => setRewardLoading(false));
     }, [activeTab, rewardFetched]);
 
+    useEffect(() => {
+        if (activeTab !== 'ops' || opsFetched) return;
+        setOpsLoading(true);
+        getOps()
+            .then(res => {
+                setOpsRiskScore(res.data.risk.riskScore);
+                setOpsRiskLevel(res.data.risk.riskLevel);
+                setOpsAbuseChecks(res.data.risk.abuseChecks);
+                setOpsAuthLevel(res.data.authority.level);
+                setOpsTotalExp(res.data.authority.totalExp);
+                setOpsRecentExp(res.data.authority.recentExp);
+                setOpsGpLedger(res.data.gpLedger);
+                setOpsWriteback(res.data.writeback);
+                setOpsFetched(true);
+            })
+            .catch(err => console.error('[ops fetch]', err))
+            .finally(() => setOpsLoading(false));
+    }, [activeTab, opsFetched]);
+
     const handleClaim = (rewardId: number, gpAmount: number | null) => {
         setRewards(prev => prev.map(r => r.rewardId === rewardId ? { ...r, status: 'claimed' as const } : r));
         if (gpAmount) setGpBalance(prev => prev + gpAmount);
@@ -1586,7 +1614,7 @@ export default function HolderPage({ address, stores }: HolderPageProps) {
         }}>
             <div style={{ width: '100%', maxWidth: 1100, display: 'grid', gap: 0, pointerEvents: 'auto' }}>
                 {/* Profile header */}
-                <ProfileHeader address={address} stores={stores} />
+                <ProfileHeader address={address} stores={stores} profile={profile} />
 
                 {/* Tab navigation */}
                 <TabNav active={activeTab} onChange={handleTabChange} />
@@ -1645,16 +1673,22 @@ export default function HolderPage({ address, stores }: HolderPageProps) {
                     )
                 )}
                 {activeTab === 'ops' && (
-                    <div style={{ display: 'grid', gap: 16 }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, alignItems: 'start' }}>
-                            <AccountRiskPanel />
-                            <AuthorityGaugePanel />
+                    opsLoading ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0', color: mutedText, fontSize: 14 }}>
+                            운영 데이터 로딩 중...
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, alignItems: 'start' }}>
-                            <GpLedgerPanel />
-                            <WritebackPreviewPanel />
+                    ) : (
+                        <div style={{ display: 'grid', gap: 16 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, alignItems: 'start' }}>
+                                <AccountRiskPanel riskScore={opsRiskScore} riskLevel={opsRiskLevel} abuseChecks={opsAbuseChecks} />
+                                <AuthorityGaugePanel level={opsAuthLevel} totalExp={opsTotalExp} recentExp={opsRecentExp} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, alignItems: 'start' }}>
+                                <GpLedgerPanel gpLedger={opsGpLedger} />
+                                <WritebackPreviewPanel writeback={opsWriteback} />
+                            </div>
                         </div>
-                    </div>
+                    )
                 )}
             </div>
         </main>

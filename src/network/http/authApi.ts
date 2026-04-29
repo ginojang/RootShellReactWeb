@@ -35,11 +35,22 @@ export type DashboardStore = {
     missions: DashboardMission[];
 };
 
+export type UserProfile = {
+    assetScore: number;
+    trustScore: number;
+    activityScore: number;
+    realityBonus: number;
+    snsFollowers: number;
+    authorityLevel: number;
+    authorityTotalExp: number;
+};
+
 export type DashboardResponse = {
     ok: boolean;
     data: {
         isHolder: boolean;
         stores: DashboardStore[];
+        profile: UserProfile;
     };
 };
 
@@ -161,6 +172,37 @@ export function getReward(): Promise<RewardResponse> {
 
 export function claimReward(rewardId: number): Promise<ClaimResponse> {
     return apiFetch<ClaimResponse>(`/reward/claim/${rewardId}`, { method: 'POST' }, true);
+}
+
+export type OpsAbuseCheck = { label: string; status: boolean; note: string };
+export type OpsExpEntry   = { expCode: string; name: string; amount: number; category: string };
+export type OpsLedgerEntry = { ledgerId: number; label: string; source: string; delta: number; balanceAfter: number; transactedAt: string };
+
+export type OpsResponse = {
+    ok: boolean;
+    data: {
+        risk: {
+            riskScore: number;
+            riskLevel: 'MONITOR' | 'WARNING' | 'HOLD' | 'FREEZE';
+            abuseChecks: OpsAbuseCheck[];
+        };
+        authority: {
+            level: number;
+            totalExp: number;
+            recentExp: OpsExpEntry[];
+        };
+        gpLedger: OpsLedgerEntry[];
+        writeback: {
+            authorityCandidateExp: number;
+            settlementStatus: string;
+            walletLinkedRecordReady: boolean;
+            previewOnly: boolean;
+        };
+    };
+};
+
+export function getOps(): Promise<OpsResponse> {
+    return apiFetch<OpsResponse>('/ops', undefined, true);
 }
 
 export function convertGp(mode: 'pvt' | 'prepaid'): Promise<ConvertGpResponse> {

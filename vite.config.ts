@@ -25,6 +25,12 @@ export default defineConfig(({ mode }) => {
       watch: {
         usePolling: true,
         interval: 100
+      },
+      proxy: {
+        '/punker/api': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+        }
       }
     },
     build: {
