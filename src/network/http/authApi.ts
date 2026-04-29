@@ -15,7 +15,7 @@ export type VerifyResponse = {
     };
 };
 
-const API_BASE_URL = 'http://localhost:3000/punker/api/1.0';
+const API_BASE_URL = 'http://192.168.0.28:3000/punker/api/1.0';
 
 export async function requestNonce(address: string): Promise<NonceResponse> {
     const res = await fetch(`${API_BASE_URL}/auth/nonce`, {

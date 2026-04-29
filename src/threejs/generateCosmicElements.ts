@@ -103,21 +103,46 @@ export function generateCosmicElements(scene: THREE.Scene, options: CosmicOption
                 float dist  = length(coord);
                 if (dist > 0.5) discard;
 
-                // 별 색상: colorSeed < 0.5 → 청백색(뜨거운 별), ≥ 0.5 → 황백색(따뜻한 별)
+                // 별 분광형 5그룹 (실제 항성 색온도 기반)
+                //   0.00–0.12  O/B형  — 진파랑 (고온)
+                //   0.12–0.35  A/B형  — 청백
+                //   0.35–0.60  F/G형  — 흰-노랑
+                //   0.60–0.85  G/K형  — 노랑-주황
+                //   0.85–1.00  K/M형  — 주황-붉은 (저온)
                 float hue, sat, lig;
-                if (vColorSeed < 0.5) {
-                    hue = 0.57 + vColorSeed * 0.10;
-                    sat = 0.22 + vColorSeed * 0.18;
-                    lig = 0.87 + vColorSeed * 0.10;
+                float cs = vColorSeed;
+
+                if (cs < 0.12) {
+                    float t = cs / 0.12;
+                    hue = 0.61 + t * 0.06;          // 0.61 ~ 0.67  (청-청보라)
+                    sat = 0.55 + t * 0.28;           // 0.55 ~ 0.83
+                    lig = 0.68 + t * 0.12;           // 0.68 ~ 0.80
+                } else if (cs < 0.35) {
+                    float t = (cs - 0.12) / 0.23;
+                    hue = 0.58 + t * 0.04;           // 0.58 ~ 0.62  (하늘색-파랑)
+                    sat = 0.22 + t * 0.20;           // 0.22 ~ 0.42
+                    lig = 0.80 + t * 0.10;           // 0.80 ~ 0.90
+                } else if (cs < 0.60) {
+                    float t = (cs - 0.35) / 0.25;
+                    hue = 0.12 + t * 0.06;           // 0.12 ~ 0.18  (노랑-연두)
+                    sat = 0.06 + t * 0.16;           // 0.06 ~ 0.22
+                    lig = 0.85 + t * 0.07;           // 0.85 ~ 0.92  (가장 밝음)
+                } else if (cs < 0.85) {
+                    float t = (cs - 0.60) / 0.25;
+                    hue = 0.07 + t * 0.05;           // 0.07 ~ 0.12  (황-주황)
+                    sat = 0.40 + t * 0.28;           // 0.40 ~ 0.68
+                    lig = 0.72 + t * 0.10;           // 0.72 ~ 0.82
                 } else {
-                    hue = 0.04 + (vColorSeed - 0.5) * 0.12;
-                    sat = 0.06 + (vColorSeed - 0.5) * 0.14;
-                    lig = 0.84 + (vColorSeed - 0.5) * 0.12;
+                    float t = (cs - 0.85) / 0.15;
+                    hue = 0.04 - t * 0.04;           // 0.04 ~ 0.00  (주황-빨강)
+                    sat = 0.62 + t * 0.22;           // 0.62 ~ 0.84
+                    lig = 0.58 + t * 0.10;           // 0.58 ~ 0.68
                 }
-                // hue도 숨쉬기 리듬에 맞춰 미세하게 흔들림
+
+                // hue를 숨쉬기 리듬에 맞춰 미세하게 흔들림
                 float hs = sin(time * 0.35 + vSeed * 6.28318) * 0.5 + 0.5;
                 float hBreath = hs * hs * (3.0 - 2.0 * hs);
-                hue = fract(hue + 0.010 * (hBreath * 2.0 - 1.0));
+                hue = fract(hue + 0.006 * (hBreath * 2.0 - 1.0));
 
                 vec3 rgb = hsl2rgb(vec3(hue, sat, lig));
 
